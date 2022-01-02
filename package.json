@@ -1,0 +1,30 @@
+{
+  "name": "sequelize-paranoid-cascade",
+  "version": "0.1.0",
+  "description": "sequelize-paranoid-cascade allows cascading deletions when using paranoid mode",
+  "bugs": {
+    "url": "https://github.com/nicoabie/sequelize-paranoid-cascade/issues"
+  },
+  "repository": "https://github.com/nicoabie/sequelize-paranoid-cascade",
+  "main": "./lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc --outDir lib"
+  },
+  "keywords": [
+    "sequelize",
+    "paranoid",
+    "cascade",
+    "triggers"
+  ],
+  "author": "nicoabie",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/validator": "^13.7.1",
+    "sequelize": "^7.0.0-alpha.4",
+    "typescript": "^4.5.4"
+  }
+}
