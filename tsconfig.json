@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es2015",
+    "target": "es2020",
     "strict": true,
     "moduleResolution": "node",
-    "sourceMap": true
+    "sourceMap": true,
+    "declaration": true
   },
   "files": ["./src/index.ts"],
   "exclude": ["node_modules"]

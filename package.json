@@ -7,6 +7,7 @@
   },
   "repository": "https://github.com/nicoabie/sequelize-paranoid-cascade",
   "main": "./lib/index.js",
+  "typings": "./lib/index.d.ts",
   "files": [
     "lib"
   ],
@@ -24,7 +25,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/validator": "^13.7.1",
-    "sequelize": "^7.0.0-alpha.4",
+    "sequelize": "^6.12.5",
     "typescript": "^4.5.4"
   }
 }
