@@ -1,4 +1,4 @@
-import { QueryInterface } from 'sequelize';
+import { ModelAttributeColumnOptions, QueryInterface } from 'sequelize';
 
 type CreateTableParameters = Parameters<typeof QueryInterface.prototype.createTable>;
 
@@ -28,28 +28,22 @@ const createParanoidDeleteTriggerStatement = (
   END;
 `;
 
+const hasParanoidCascadeOnDelete = (options: AddColumnAttributeParameter) =>
+  typeof options === 'object' && 'onDelete' in options && options.onDelete === 'PARANOID CASCADE';
+
 const getPrimaryTableProps = (
-  options: AddColumnAttributeParameter,
+  options: ModelAttributeColumnOptions,
   getPrimaryKey?: (primaryTable: string) => string,
-): { primaryTable: string; primaryKey: string } | null => {
-  if (
-    typeof options === 'object' &&
-    'onDelete' in options &&
-    options.onDelete === 'PARANOID CASCADE'
-  ) {
-    if ('references' in options) {
-      const { references } = options;
-      if (typeof references === 'string') {
-        return { primaryTable: references, primaryKey: getPrimaryKey?.(references) ?? 'id' };
-      }
-      const model = references!.model as string;
-      return {
-        primaryTable: model,
-        primaryKey: references?.key ?? getPrimaryKey?.(model) ?? 'id',
-      };
-    }
+): { primaryTable: string; primaryKey: string } => {
+  const { references } = options;
+  if (typeof references === 'string') {
+    return { primaryTable: references, primaryKey: getPrimaryKey?.(references) ?? 'id' };
   }
-  return null;
+  const model = references!.model as string;
+  return {
+    primaryTable: model,
+    primaryKey: references?.key ?? getPrimaryKey?.(model) ?? 'id',
+  };
 };
 
 export const queryInterfaceDecorator = (queryInterface: QueryInterface, options?: Options) =>
@@ -61,19 +55,20 @@ export const queryInterfaceDecorator = (queryInterface: QueryInterface, options?
       const command = String(propKey);
       const origMethod = (target as Record<string, any>)[command];
       return async (...args: CreateTableParameters | AddColumnParameters): Promise<void> => {
-        const commandPromise: Promise<void> = Reflect.apply(origMethod, target, args);
-
         // here we may add a triggers to set the deletedAt field on the table being modified or created
         // when the referenced table is paranoid deleted
         if (command === 'addColumn') {
-          const addColumnArgs = args as AddColumnParameters;
-          const { primaryTable, primaryKey } =
-            getPrimaryTableProps(addColumnArgs?.[2], options?.getPrimaryKey) ?? {};
-          if (primaryTable) {
-            const foreignTable = addColumnArgs[0];
-            const foreignKey = addColumnArgs[1];
+          const [foreignTable, foreignKey, columnDescription] = args as AddColumnParameters;
+          if (hasParanoidCascadeOnDelete(columnDescription)) {
+            const { primaryTable, primaryKey } = getPrimaryTableProps(
+              columnDescription as ModelAttributeColumnOptions,
+              options?.getPrimaryKey,
+            );
 
-            const commandResult = await commandPromise;
+            // 'PARANOID CASCADE' is not a REAL accepted SQL value
+            delete (columnDescription as ModelAttributeColumnOptions).onDelete;
+
+            const commandResult = await Reflect.apply(origMethod, target, args);
 
             const statement = createParanoidDeleteTriggerStatement(
               primaryTable,
@@ -91,31 +86,36 @@ export const queryInterfaceDecorator = (queryInterface: QueryInterface, options?
         if (command === 'createTable') {
           const [newTable, columns] = args as CreateTableParameters;
 
-          const commandResult = await commandPromise;
+          const createTriggers: string[] = [];
 
-          await Promise.all([
-            ...Object.entries(columns)
-              .map(([columnName, columnDescription]) => ({
-                columnName,
-                primaryTableProps: getPrimaryTableProps(columnDescription, options?.getPrimaryKey),
-              }))
-              .filter(({ primaryTableProps }) => primaryTableProps !== null)
-              .map(({ columnName: foreignKey, primaryTableProps }) =>
-                target.sequelize.query(
-                  createParanoidDeleteTriggerStatement(
-                    primaryTableProps!.primaryTable,
-                    primaryTableProps!.primaryKey,
-                    newTable as string,
-                    foreignKey as string,
-                  ),
+          Object.entries(columns).forEach(([foreignKey, columnDescription]) => {
+            if (hasParanoidCascadeOnDelete(columnDescription)) {
+              const { primaryTable, primaryKey } = getPrimaryTableProps(
+                columnDescription as ModelAttributeColumnOptions,
+                options?.getPrimaryKey,
+              );
+              createTriggers.push(
+                createParanoidDeleteTriggerStatement(
+                  primaryTable,
+                  primaryKey,
+                  newTable as string,
+                  foreignKey,
                 ),
-              ),
-          ]);
+              );
+
+              // 'PARANOID CASCADE' is not a REAL accepted SQL value
+              delete (columnDescription as ModelAttributeColumnOptions).onDelete;
+            }
+          });
+
+          const commandResult = await Reflect.apply(origMethod, target, args);
+
+          await Promise.all(createTriggers.map((t) => target.sequelize.query(t)));
 
           return commandResult;
         }
 
-        return commandPromise;
+        return Reflect.apply(origMethod, target, args);
       };
     },
   });
