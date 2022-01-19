@@ -5,7 +5,7 @@ const path = require('path');
 const { isDeepStrictEqual } = require('util');
 const _ = require('lodash');
 
-const Sequelize = require('sequelize');
+const { Sequelize } = require('sequelize-typescript');
 const Config = require('./config/config');
 const chai = require('chai');
 
@@ -116,6 +116,7 @@ const Support = {
     const sequelizeOptions = _.defaults(options, {
       host: options.host || config.host,
       logging: process.env.SEQ_LOG ? console.log : false,
+      logging: (queryString, queryObject) => console.log(`${queryString} ${queryObject.bind}`),
       dialect: options.dialect,
       port: options.port || process.env.SEQ_PORT || config.port,
       pool: config.pool,

@@ -5,11 +5,15 @@ import ParanoidModel from './base/ParanoidModel';
 
 @Table({ tableName: 'a', modelName: 'a' })
 class A extends ParanoidModel {
-  @Column({ type: DataTypes.INTEGER, primaryKey: true })
-  id: number;
+  @Column({
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  })
+  a_id!: number;
 
   @HasMany(() => B)
-  bs: B[];
+  bs!: B[];
 }
 
 export default A;

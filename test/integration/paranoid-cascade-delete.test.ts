@@ -5,15 +5,29 @@ import { expect } from 'chai';
 import * as Support from '../support';
 import { queryInterfaceDecorator } from '../../src/index';
 import { QueryInterface, DataTypes } from 'sequelize';
+import A from '../models/A';
+import B from '../models/B';
 
 describe(Support.getTestDialectTeaser('ParanoidCascadeDelete'), () => {
   let queryInterface: QueryInterface;
+  before(function () {
+    this.sequelize.addModels([A, B]);
+  });
   beforeEach(async function () {
     queryInterface = queryInterfaceDecorator(this.sequelize.getQueryInterface());
     await queryInterface.createTable('a', {
       a_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
+        autoIncrement: true,
+      },
+
+      createdAt: {
+        type: DataTypes.DATE,
+      },
+
+      updatedAt: {
+        type: DataTypes.DATE,
       },
 
       deletedAt: {
@@ -25,7 +39,13 @@ describe(Support.getTestDialectTeaser('ParanoidCascadeDelete'), () => {
       b_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
+        autoIncrement: true,
       },
+
+      value: {
+        type: DataTypes.INTEGER,
+      },
+
       a_id: {
         type: DataTypes.INTEGER,
         references: {
@@ -36,6 +56,14 @@ describe(Support.getTestDialectTeaser('ParanoidCascadeDelete'), () => {
         onDelete: 'PARANOID CASCADE',
       },
 
+      createdAt: {
+        type: DataTypes.DATE,
+      },
+
+      updatedAt: {
+        type: DataTypes.DATE,
+      },
+
       deletedAt: {
         type: DataTypes.DATE,
       },
@@ -43,36 +71,21 @@ describe(Support.getTestDialectTeaser('ParanoidCascadeDelete'), () => {
   });
 
   afterEach(async function () {
-    await queryInterface.dropSchema('testschema');
+    await queryInterface.dropAllTables();
   });
 
   beforeEach(async function () {
-    this.User = this.sequelize.define(
-      'User',
+    await A.create(
       {
-        aNumber: { type: DataTypes.INTEGER },
+        bs: [{ value: 1 }, { value: 2 }],
       },
-      {
-        schema: 'testschema',
-      },
+      { include: [{ model: B, as: 'bs' }] },
     );
-
-    await this.User.sync({ force: true });
   });
 
-  it('supports increment', async function () {
-    const user0 = await this.User.create({ aNumber: 1 });
-    const result = await user0.increment('aNumber', { by: 3 });
-    const user = await result.reload();
-    expect(user).to.be.ok;
-    expect(user.aNumber).to.be.equal(4);
-  });
-
-  it('supports decrement', async function () {
-    const user0 = await this.User.create({ aNumber: 10 });
-    const result = await user0.decrement('aNumber', { by: 3 });
-    const user = await result.reload();
-    expect(user).to.be.ok;
-    expect(user.aNumber).to.be.equal(7);
+  it('supports cascade', async function () {
+    await A.destroy({ where: {} });
+    const bs = await B.findAll({ paranoid: false });
+    expect(bs.filter((b) => !!b.deletedAt)).to.not.be.empty;
   });
 });
