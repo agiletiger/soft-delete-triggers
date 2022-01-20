@@ -7,11 +7,12 @@ import { queryInterfaceDecorator } from '../../src/index';
 import { QueryInterface, DataTypes } from 'sequelize';
 import A from '../models/A';
 import B from '../models/B';
+import C from '../models/C';
 
 describe(Support.getTestDialectTeaser('ParanoidCascadeDelete'), () => {
   let queryInterface: QueryInterface;
   before(function () {
-    this.sequelize.addModels([A, B]);
+    this.sequelize.addModels([A, B, C]);
   });
   beforeEach(async function () {
     queryInterface = queryInterfaceDecorator(this.sequelize.getQueryInterface());
@@ -68,6 +69,50 @@ describe(Support.getTestDialectTeaser('ParanoidCascadeDelete'), () => {
         type: DataTypes.DATE,
       },
     });
+
+    await queryInterface.createTable('c', {
+      c_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+
+      value: {
+        type: DataTypes.INTEGER,
+      },
+
+      a_id: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: 'a',
+          key: 'a_id',
+        },
+        allowNull: false,
+        onDelete: 'PARANOID CASCADE',
+      },
+
+      b_id: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: 'b',
+          key: 'b_id',
+        },
+        allowNull: false,
+        onDelete: 'PARANOID CASCADE',
+      },
+
+      createdAt: {
+        type: DataTypes.DATE,
+      },
+
+      updatedAt: {
+        type: DataTypes.DATE,
+      },
+
+      deletedAt: {
+        type: DataTypes.DATE,
+      },
+    });
   });
 
   afterEach(async function () {
@@ -75,17 +120,29 @@ describe(Support.getTestDialectTeaser('ParanoidCascadeDelete'), () => {
   });
 
   beforeEach(async function () {
-    await A.create(
+    const a = await A.create({});
+    await B.bulkCreate(
+      [
+        { a_id: a.a_id, value: 1, cs: [{ a_id: a.a_id, value: 3 }] },
+        { a_id: a.a_id, value: 2 },
+      ],
       {
-        bs: [{ value: 1 }, { value: 2 }],
+        include: [{ model: C, as: 'cs' }],
       },
-      { include: [{ model: B, as: 'bs' }] },
     );
   });
 
   it('supports cascade', async function () {
+    await B.destroy({ where: {} });
+    const cs = await C.findAll({ paranoid: false });
+    expect(cs.filter((c) => !!c.deletedAt)).to.not.be.empty;
+  });
+
+  it('supports nested cascade', async function () {
     await A.destroy({ where: {} });
     const bs = await B.findAll({ paranoid: false });
     expect(bs.filter((b) => !!b.deletedAt)).to.not.be.empty;
+    const cs = await C.findAll({ paranoid: false });
+    expect(cs.filter((c) => !!c.deletedAt)).to.not.be.empty;
   });
 });

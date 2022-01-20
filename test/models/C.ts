@@ -1,13 +1,13 @@
 import { DataTypes } from 'sequelize';
-import { BelongsTo, Column, ForeignKey, HasMany, Table } from 'sequelize-typescript';
+import { BelongsTo, Column, ForeignKey, Table } from 'sequelize-typescript';
 import A from './A';
+import B from './B';
 import ParanoidModel from './base/ParanoidModel';
-import C from './C';
 
-@Table({ tableName: 'b', modelName: 'b' })
-class B extends ParanoidModel {
+@Table({ tableName: 'c', modelName: 'c' })
+class C extends ParanoidModel {
   @Column({ type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true })
-  b_id!: number;
+  c_id!: number;
 
   @Column({ type: DataTypes.INTEGER })
   value!: number;
@@ -16,11 +16,15 @@ class B extends ParanoidModel {
   @ForeignKey(() => A)
   a_id!: number;
 
+  @Column({ type: DataTypes.INTEGER })
+  @ForeignKey(() => B)
+  b_id!: number;
+
   @BelongsTo(() => A)
   a!: A;
 
-  @HasMany(() => C)
-  cs!: C[];
+  @BelongsTo(() => B)
+  b!: A;
 }
 
-export default B;
+export default C;
