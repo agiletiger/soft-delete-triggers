@@ -1,6 +1,6 @@
-# sequelize-paranoid-cascade
+# sequelize-paranoid-delete
 
-sequelize-paranoid-cascade allows cascading deletions when using paranoid mode in sequelize
+sequelize-paranoid-delete enables onDelete when using paranoid mode in sequelize
 
 ## Highlights
 
@@ -31,7 +31,7 @@ The following example uses a MySql database through sequelize and persists the m
 // index.js
 const { Sequelize } = require('sequelize');
 const { Umzug, SequelizeStorage } = require('umzug');
-const { queryInterfaceDecorator } = require('sequelize-paranoid-cascade');
+const { queryInterfaceDecorator } = require('sequelize-paranoid-delete');
 
 const sequelize = new Sequelize({ dialect: 'mysql', storage: './db.mysql' });
 
@@ -110,16 +110,16 @@ async function up({ context: queryInterface }) {
 
 #### Installation
 
-sequelize-paranoid-cascade is available on npm by specifying the correct tag:
+sequelize-paranoid-delete is available on npm by specifying the correct tag:
 
 ```bash
-npm install sequelize-paranoid-cascade
+npm install sequelize-paranoid-delete
 ```
 
 OR
 
 ```bash
-yarn add sequelize-paranoid-cascade
+yarn add sequelize-paranoid-delete
 ```
 
 ## License

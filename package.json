@@ -1,11 +1,11 @@
 {
-  "name": "sequelize-paranoid-cascade",
+  "name": "sequelize-paranoid-delete",
   "version": "0.1.0",
-  "description": "sequelize-paranoid-cascade allows cascading deletions when using paranoid mode",
+  "description": "sequelize-paranoid-delete enables onDelete when using paranoid mode",
   "bugs": {
-    "url": "https://github.com/nicoabie/sequelize-paranoid-cascade/issues"
+    "url": "https://github.com/nicoabie/sequelize-paranoid-delete/issues"
   },
-  "repository": "https://github.com/nicoabie/sequelize-paranoid-cascade",
+  "repository": "https://github.com/nicoabie/sequelize-paranoid-delete",
   "main": "./lib/index.mjs",
   "typings": "./lib/index.d.ts",
   "files": [
@@ -19,6 +19,7 @@
   "keywords": [
     "sequelize",
     "paranoid",
+    "delete",
     "cascade",
     "triggers"
   ],
