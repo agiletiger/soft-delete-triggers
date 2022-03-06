@@ -6,20 +6,17 @@ sequelize-paranoid-delete enables onDelete when using paranoid mode in sequelize
 
 - Written in TypeScript
 - Extrely easy to use
-- Database agnostic (in progress)
+- Database agnostic (in progress, working for MySQL now)
 - Integrates with Umzug and any othe library for running migrations with sequelize
 
-## Current Support
+## Use Cases:
 
-- MySql
-- Creating triggers when creating tables that have columns which reference other tables
-- creating a trigger when creating a column which references other table
-
-There are a couple of use case missing:
-
-- [ ] support column delete (remove trigger in referenced table)
-- [ ] support rename column (rename trigger)
-- [ ] support rename table (rename trigger)
+- [x] support createTable (create trigger)
+- [ ] support renameTable (rename trigger)
+- [ ] support dropTable (remove trigger in referenced table)
+- [x] support addColumn (create trigger)
+- [ ] support renameColumn (rename trigger)
+- [ ] support dropColumn (remove trigger in referenced table)
 - [ ] support for adding extra conditions to the triggers (multi tenant support)
 - [ ] maybe another?
 
