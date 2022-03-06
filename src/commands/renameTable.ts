@@ -36,7 +36,7 @@ export const renameTable = async (target: QueryInterface, parameters: RenameTabl
   );
 
   if (foreignKeyReferencesWithTriggers.length) {
-    const columnsDescription = await target.describeTable(oldName);
+    const columnsDescription = await target.describeTable(newName);
 
     const primaryKey = Object.entries(columnsDescription).find(
       ([_, description]) => description.primaryKey,

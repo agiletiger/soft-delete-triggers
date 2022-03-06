@@ -145,4 +145,13 @@ describe(Support.getTestDialectTeaser('ParanoidCascadeDelete'), () => {
     const cs = await C.findAll({ paranoid: false });
     expect(cs.filter((c) => !!c.deletedAt)).to.not.be.empty;
   });
+
+  it('supports renaming a dependant table', async function () {
+    await queryInterface.renameTable('b', 'z');
+    // @ts-expect-error need to update the model's tableName but it is readonly
+    B.tableName = 'z';
+    await A.destroy({ where: {} });
+    const bs = await B.findAll({ paranoid: false });
+    expect(bs.filter((b) => !!b.deletedAt)).to.not.be.empty;
+  });
 });

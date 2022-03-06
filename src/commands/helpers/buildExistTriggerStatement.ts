@@ -11,7 +11,7 @@ SELECT
     FROM
       INFORMATION_SCHEMA.TRIGGERS
     WHERE
-      EVENT_OBJECT_TABLE = ${primaryTable}
-      AND TRIGGER_NAME = ${buildTriggerName(primaryTable, foreignTable)}
+      EVENT_OBJECT_TABLE = '${primaryTable}'
+      AND TRIGGER_NAME = '${buildTriggerName(primaryTable, foreignTable)}'
   )
 `;
