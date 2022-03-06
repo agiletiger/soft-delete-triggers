@@ -23,7 +23,7 @@
     "cascade",
     "triggers"
   ],
-  "author": "nicoabie",
+  "author": "ReMatter",
   "license": "MIT",
   "devDependencies": {
     "@types/chai": "^4.3.0",
