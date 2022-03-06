@@ -1,6 +1,6 @@
 import { ModelAttributeColumnOptions, QueryInterface } from 'sequelize';
 import { AddColumnParameters, Options } from '../types';
-import { createParanoidDeleteTriggerStatement } from './helpers/createParanoidDeleteTriggerStatement';
+import { buildCreateTriggerStatement } from './helpers/buildCreateTriggerStatement';
 import { getPrimaryTableProps } from './helpers/getPrimaryTableProps';
 import { hasParanoidCascadeOnDelete } from './helpers/hasParanoidCascadeOnDelete';
 
@@ -27,7 +27,7 @@ export const addColumn = async (
       parameters,
     );
 
-    const statement = createParanoidDeleteTriggerStatement(
+    const statement = buildCreateTriggerStatement(
       primaryTable,
       primaryKey!,
       foreignTable as string,

@@ -1,6 +1,6 @@
 import { ModelAttributeColumnOptions, QueryInterface } from 'sequelize';
 import { CreateTableParameters, Options } from '../types';
-import { createParanoidDeleteTriggerStatement } from './helpers/createParanoidDeleteTriggerStatement';
+import { buildCreateTriggerStatement } from './helpers/buildCreateTriggerStatement';
 import { getPrimaryTableProps } from './helpers/getPrimaryTableProps';
 import { hasParanoidCascadeOnDelete } from './helpers/hasParanoidCascadeOnDelete';
 
@@ -22,12 +22,7 @@ export const createTable = async (
         options?.getPrimaryKey,
       );
       createTriggers.push(
-        createParanoidDeleteTriggerStatement(
-          primaryTable,
-          primaryKey,
-          newTable as string,
-          foreignKey,
-        ),
+        buildCreateTriggerStatement(primaryTable, primaryKey, newTable as string, foreignKey),
       );
 
       // 'PARANOID CASCADE' is not a REAL accepted SQL value

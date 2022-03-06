@@ -1,10 +1,12 @@
-export const createParanoidDeleteTriggerStatement = (
+import { buildTriggerName } from './buildTriggerName';
+
+export const buildCreateTriggerStatement = (
   primaryTable: string,
   primaryKey: string,
   foreignTable: string,
   foreignKey: string,
 ): string => /* sql */ `
-  CREATE TRIGGER on_${primaryTable}_delete_update_${foreignTable}
+  CREATE TRIGGER ${buildTriggerName(primaryTable, foreignTable)}
   AFTER UPDATE
   ON ${primaryTable} FOR EACH ROW
   BEGIN
