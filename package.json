@@ -12,8 +12,9 @@
     "lib"
   ],
   "scripts": {
+    "test-unit": "yarn ts-mocha -p tsconfig.json \"src/**/*.test.ts\"",
     "test-integration": "yarn ts-mocha -p tsconfig.json \"test/integration/**/*.test.ts\"",
-    "test": "yarn run test-integration",
+    "test": "yarn run test-unit && yarn run test-integration",
     "build": "tsc --outDir lib"
   },
   "keywords": [

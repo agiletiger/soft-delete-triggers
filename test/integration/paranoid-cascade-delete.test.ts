@@ -1,5 +1,3 @@
-'use strict';
-
 import { expect } from 'chai';
 
 import * as Support from '../support';
@@ -9,7 +7,7 @@ import A from '../models/A';
 import B from '../models/B';
 import C from '../models/C';
 
-describe(Support.getTestDialectTeaser('ParanoidCascadeDelete'), () => {
+describe(Support.getTestDialectTeaser('paranoid cascade delete'), () => {
   let queryInterface: QueryInterface;
   before(function () {
     this.sequelize.addModels([A, B, C]);
@@ -117,6 +115,12 @@ describe(Support.getTestDialectTeaser('ParanoidCascadeDelete'), () => {
 
   afterEach(async function () {
     await queryInterface.dropAllTables();
+    // @ts-expect-error restore model's tableName but it is readonly
+    A.tableName = 'a';
+    // @ts-expect-error restore model's tableName but it is readonly
+    B.tableName = 'b';
+    // @ts-expect-error restore model's tableName but it is readonly
+    C.tableName = 'c';
   });
 
   beforeEach(async function () {
@@ -146,10 +150,19 @@ describe(Support.getTestDialectTeaser('ParanoidCascadeDelete'), () => {
     expect(cs.filter((c) => !!c.deletedAt)).to.not.be.empty;
   });
 
-  it('supports renaming a dependant table', async function () {
+  it('supports renaming a dependent table', async function () {
     await queryInterface.renameTable('b', 'z');
     // @ts-expect-error need to update the model's tableName but it is readonly
     B.tableName = 'z';
+    await A.destroy({ where: {} });
+    const bs = await B.findAll({ paranoid: false });
+    expect(bs.filter((b) => !!b.deletedAt)).to.not.be.empty;
+  });
+
+  it('supports renaming an independent table', async function () {
+    await queryInterface.renameTable('a', 'z');
+    // @ts-expect-error need to update the model's tableName but it is readonly
+    A.tableName = 'z';
     await A.destroy({ where: {} });
     const bs = await B.findAll({ paranoid: false });
     expect(bs.filter((b) => !!b.deletedAt)).to.not.be.empty;

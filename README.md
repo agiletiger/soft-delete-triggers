@@ -12,7 +12,7 @@ sequelize-paranoid-delete enables onDelete when using paranoid mode in sequelize
 ## Use Cases:
 
 - [x] support createTable (create trigger)
-- [ ] support renameTable (rename trigger)
+- [x] support renameTable (rename trigger)
 - [ ] support dropTable (remove trigger in referenced table)
 - [x] support addColumn (create trigger)
 - [ ] support renameColumn (rename trigger)
@@ -118,6 +118,10 @@ OR
 ```bash
 yarn add sequelize-paranoid-delete
 ```
+
+### Debug Tests
+
+`yarn node --inspect-brk ./node_modules/.bin/ts-mocha -p tsconfig.json src/**/*.test.ts`
 
 ## License
 
