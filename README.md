@@ -13,7 +13,7 @@ sequelize-paranoid-delete enables onDelete when using paranoid mode in sequelize
 
 - [x] support createTable (create trigger)
 - [x] support renameTable (rename trigger)
-- [ ] support dropTable (remove trigger in referenced table)
+- [x] support dropTable (remove trigger in referenced table)
 - [x] support addColumn (create trigger)
 - [ ] support renameColumn (rename trigger)
 - [ ] support dropColumn (remove trigger in referenced table)

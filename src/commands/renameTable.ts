@@ -1,40 +1,21 @@
 import { QueryInterface, QueryTypes } from 'sequelize';
-import { RenameTableParameters } from '../types';
+import { ForeignKeyFields, RenameTableParameters } from '../types';
 import { buildCreateTriggerStatement } from './helpers/buildCreateTriggerStatement';
 import { buildDropTriggerStatement } from './helpers/buildDropTriggerStatement';
 import { buildExistTriggerStatement } from './helpers/buildExistTriggerStatement';
+import { getForeignKeyReferencesWithTriggers } from './helpers/getForeignKeyReferencesWithTriggers';
+import { getForeignKeysWithTriggers } from './helpers/getForeignKeysWithTriggers';
 import { unwrapSelectOneValue } from './helpers/unwrapSelectOneValue';
 
 export const RENAME_TABLE_COMMAND_NAME = 'renameTable';
 
-type ForeignKeyFields = {
-  tableName: string;
-  columnName: string;
-  referencedTableName: string;
-  referencedColumnName: string;
-};
-
 export const renameTable = async (target: QueryInterface, parameters: RenameTableParameters) => {
   const [oldName, newName] = parameters;
 
-  // we look for tables that are referenced by this table (acting as a dependent table)
-  const foreignKeyReferences = (await target.getForeignKeyReferencesForTable(
-    oldName,
-  )) as ForeignKeyFields[];
-
-  const foreignKeyReferencesWithTriggers = (
-    await Promise.all(
-      foreignKeyReferences.map(async ({ referencedTableName, referencedColumnName }) => {
-        const triggerExists = !!unwrapSelectOneValue(
-          await target.sequelize.query(
-            buildExistTriggerStatement(referencedTableName, oldName as string),
-            { type: QueryTypes.SELECT },
-          ),
-        );
-        return triggerExists ? { referencedTableName, referencedColumnName } : null;
-      }),
-    )
-  ).filter((field) => !!field) as ForeignKeyFields[];
+  const foreignKeyReferencesWithTriggers = await getForeignKeyReferencesWithTriggers(
+    oldName as string,
+    target,
+  );
 
   const columnsDescription = await target.describeTable(oldName);
 
@@ -42,25 +23,11 @@ export const renameTable = async (target: QueryInterface, parameters: RenameTabl
     ([_, description]) => description.primaryKey,
   )?.[0];
 
-  // we look for tables that reference this table (acting as a independent table)
-  const foreignKeys = (await target.sequelize.query(
-    // @ts-expect-error queryGenerator has no types and getForeignKeyQuery is private
-    target.queryGenerator.getForeignKeyQuery(oldName, primaryKey),
-    { type: QueryTypes.SELECT },
-  )) as ForeignKeyFields[];
-
-  const foreignKeysWithTriggers = (
-    await Promise.all(
-      foreignKeys.map(async ({ referencedTableName, tableName, columnName }) => {
-        const triggerExists = !!unwrapSelectOneValue(
-          await target.sequelize.query(buildExistTriggerStatement(referencedTableName, tableName), {
-            type: QueryTypes.SELECT,
-          }),
-        );
-        return triggerExists ? { tableName, columnName } : null;
-      }),
-    )
-  ).filter((field) => !!field) as ForeignKeyFields[];
+  const foreignKeysWithTriggers = await getForeignKeysWithTriggers(
+    oldName as string,
+    primaryKey!,
+    target,
+  );
 
   const commandResult = await Reflect.apply(
     (target as Record<string, any>)[RENAME_TABLE_COMMAND_NAME],
