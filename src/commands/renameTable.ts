@@ -1,11 +1,10 @@
-import { QueryInterface, QueryTypes } from 'sequelize';
-import { ForeignKeyFields, RenameTableParameters } from '../types';
+import { QueryInterface } from 'sequelize';
+import { RenameTableParameters } from '../types';
 import { buildCreateTriggerStatement } from './helpers/buildCreateTriggerStatement';
 import { buildDropTriggerStatement } from './helpers/buildDropTriggerStatement';
-import { buildExistTriggerStatement } from './helpers/buildExistTriggerStatement';
 import { getForeignKeyReferencesWithTriggers } from './helpers/getForeignKeyReferencesWithTriggers';
 import { getForeignKeysWithTriggers } from './helpers/getForeignKeysWithTriggers';
-import { unwrapSelectOneValue } from './helpers/unwrapSelectOneValue';
+import { getPrimaryKeyName } from './helpers/getPrimaryKeyName';
 
 export const RENAME_TABLE_COMMAND_NAME = 'renameTable';
 
@@ -17,11 +16,7 @@ export const renameTable = async (target: QueryInterface, parameters: RenameTabl
     target,
   );
 
-  const columnsDescription = await target.describeTable(oldName);
-
-  const primaryKey = Object.entries(columnsDescription).find(
-    ([_, description]) => description.primaryKey,
-  )?.[0];
+  const primaryKey = await getPrimaryKeyName(oldName as string, target);
 
   const foreignKeysWithTriggers = await getForeignKeysWithTriggers(
     oldName as string,

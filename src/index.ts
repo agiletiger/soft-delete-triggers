@@ -2,6 +2,7 @@ import { QueryInterface } from 'sequelize';
 import { addColumn, ADD_COLUMN_COMMAND_NAME } from './commands/addColumn';
 import { createTable, CREATE_TABLE_COMMAND_NAME } from './commands/createTable';
 import { dropTable, DROP_TABLE_COMMAND_NAME } from './commands/dropTable';
+import { removeColumn, REMOVE_COLUMN_COMMAND_NAME } from './commands/removeColumn';
 import { renameColumn, RENAME_COLUMN_COMMAND_NAME } from './commands/renameColumn';
 import { renameTable, RENAME_TABLE_COMMAND_NAME } from './commands/renameTable';
 import {
@@ -9,6 +10,7 @@ import {
   CreateTableParameters,
   DropTableParameters,
   Options,
+  RemoveColumnParameters,
   RenameColumnParameters,
   RenameTableParameters,
 } from './types';
@@ -28,6 +30,7 @@ export const queryInterfaceDecorator = (queryInterface: QueryInterface, options?
           | DropTableParameters
           | AddColumnParameters
           | RenameColumnParameters
+          | RemoveColumnParameters
           | RenameTableParameters
       ): Promise<void> => {
         // here we may add a triggers to set the deletedAt field on the table being modified or created
@@ -38,6 +41,10 @@ export const queryInterfaceDecorator = (queryInterface: QueryInterface, options?
 
         if (command === RENAME_COLUMN_COMMAND_NAME) {
           return renameColumn(target, args as RenameColumnParameters);
+        }
+
+        if (command === REMOVE_COLUMN_COMMAND_NAME) {
+          return removeColumn(target, args as RemoveColumnParameters);
         }
 
         if (command === CREATE_TABLE_COMMAND_NAME) {

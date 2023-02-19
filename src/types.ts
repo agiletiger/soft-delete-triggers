@@ -10,6 +10,8 @@ export type AddColumnParameters = Parameters<typeof QueryInterface.prototype.add
 
 export type RenameColumnParameters = Parameters<typeof QueryInterface.prototype.renameColumn>;
 
+export type RemoveColumnParameters = Parameters<typeof QueryInterface.prototype.removeColumn>;
+
 export type AddColumnAttributeParameter = AddColumnParameters[2];
 
 export type Options = {

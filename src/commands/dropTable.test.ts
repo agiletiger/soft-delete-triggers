@@ -4,7 +4,7 @@ import * as Support from '../../test/support';
 import { queryInterfaceDecorator } from '../index';
 import { QueryInterface, DataTypes, QueryTypes } from 'sequelize';
 import { buildExistTriggerStatement } from './helpers/buildExistTriggerStatement';
-import { unwrapSelectOneValue } from './helpers/unwrapSelectOneValue';
+import { unwrapSelectOneValue } from './helpers/unwrapSelect';
 
 describe(Support.getTestDialectTeaser('renameTable'), () => {
   let queryInterface: QueryInterface;
