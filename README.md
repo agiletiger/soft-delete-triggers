@@ -5,9 +5,10 @@ sequelize-paranoid-delete enables onDelete when using paranoid mode in sequelize
 ## Highlights
 
 - Written in TypeScript
-- Extrely easy to use
+- Extremely easy to use
 - Database agnostic (in progress, working for MySQL now)
 - Integrates with Umzug and any othe library for running migrations with sequelize
+- CLI to generate triggers for existing database
 
 ## Use Cases:
 
@@ -15,9 +16,9 @@ sequelize-paranoid-delete enables onDelete when using paranoid mode in sequelize
 - [x] support renameTable (rename trigger)
 - [x] support dropTable (remove trigger in referenced table)
 - [x] support addColumn (create trigger)
-- [ ] support renameColumn (rename trigger)
-- [ ] support dropColumn (remove trigger in referenced table)
-- [ ] support for adding extra conditions to the triggers (multi tenant support)
+- [X] support renameColumn (rewrite trigger body)
+- [X] support removeColumn (remove trigger in referenced table)
+- [ ] support for all the ON DELETE reference_options (currently CASCADE only)
 - [ ] maybe another?
 
 ### Minimal Example (using Umzug)
@@ -121,7 +122,7 @@ yarn add sequelize-paranoid-delete
 
 ### Debug Tests
 
-`yarn node --inspect-brk ./node_modules/.bin/ts-mocha -p tsconfig.json src/**/*.test.ts`
+`yarn node --inspect-brk ./node_modules/.bin/ts-mocha -p lib.tsconfig.json src/**/*.test.ts`
 
 ## License
 
