@@ -8,6 +8,8 @@ export type DropTableParameters = Parameters<typeof QueryInterface.prototype.dro
 
 export type AddColumnParameters = Parameters<typeof QueryInterface.prototype.addColumn>;
 
+export type RenameColumnParameters = Parameters<typeof QueryInterface.prototype.renameColumn>;
+
 export type AddColumnAttributeParameter = AddColumnParameters[2];
 
 export type Options = {
