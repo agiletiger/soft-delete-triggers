@@ -21,7 +21,7 @@ export const addColumn = async (
     // 'PARANOID CASCADE' is not a REAL accepted SQL value
     delete (columnDescription as ModelAttributeColumnOptions).onDelete;
 
-    const commandResult = await Reflect.apply(
+    await Reflect.apply(
       (target as Record<string, any>)[ADD_COLUMN_COMMAND_NAME],
       target,
       parameters,
@@ -35,7 +35,5 @@ export const addColumn = async (
     );
 
     await target.sequelize.query(statement);
-
-    return commandResult;
   }
 };

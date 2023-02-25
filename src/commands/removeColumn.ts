@@ -29,7 +29,7 @@ export const removeColumn = async (target: QueryInterface, parameters: RemoveCol
       { type: QueryTypes.SELECT }
       )) as {ACTION_STATEMENT: string}[];
 
-  const commandResult = await Reflect.apply(
+  await Reflect.apply(
     (target as Record<string, any>)[REMOVE_COLUMN_COMMAND_NAME],
     target,
     parameters,
@@ -52,6 +52,4 @@ export const removeColumn = async (target: QueryInterface, parameters: RemoveCol
       ),
     );
   }
-
-  return commandResult;
 };

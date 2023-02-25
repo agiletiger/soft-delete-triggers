@@ -17,7 +17,7 @@ export const dropTable = async (
     target,
   );
 
-  const commandResult = await Reflect.apply(
+  await Reflect.apply(
     (target as Record<string, any>)[DROP_TABLE_COMMAND_NAME],
     target,
     parameters,
@@ -28,6 +28,4 @@ export const dropTable = async (
       target.sequelize.query(buildDropTriggerStatement(referencedTableName, tableName as string)),
     ),
   );
-
-  return commandResult;
 };

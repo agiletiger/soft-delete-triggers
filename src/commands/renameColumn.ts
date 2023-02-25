@@ -33,7 +33,7 @@ export const renameColumn = async (target: QueryInterface, parameters: RenameCol
       )) as {ACTION_STATEMENT: string}[];
 
 
-  const commandResult = await Reflect.apply(
+  await Reflect.apply(
     (target as Record<string, any>)[RENAME_COLUMN_COMMAND_NAME],
     target,
     parameters,
@@ -82,6 +82,4 @@ export const renameColumn = async (target: QueryInterface, parameters: RenameCol
       ),
     );
   }
-
-  return commandResult;
 };

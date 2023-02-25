@@ -30,13 +30,11 @@ export const createTable = async (
     }
   });
 
-  const commandResult = await Reflect.apply(
+  await Reflect.apply(
     (target as Record<string, any>)[CREATE_TABLE_COMMAND_NAME],
     target,
     parameters,
   );
 
   await Promise.all(createTriggers.map((t) => target.sequelize.query(t)));
-
-  return commandResult;
 };

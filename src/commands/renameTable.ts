@@ -24,7 +24,7 @@ export const renameTable = async (target: QueryInterface, parameters: RenameTabl
     target,
   );
 
-  const commandResult = await Reflect.apply(
+  await Reflect.apply(
     (target as Record<string, any>)[RENAME_TABLE_COMMAND_NAME],
     target,
     parameters,
@@ -73,6 +73,4 @@ export const renameTable = async (target: QueryInterface, parameters: RenameTabl
       ),
     );
   }
-
-  return commandResult;
 };
