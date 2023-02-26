@@ -6,7 +6,7 @@ import { QueryInterface, DataTypes, QueryTypes } from 'sequelize';
 import { buildExistTriggerStatement } from './helpers/buildExistTriggerStatement';
 import { unwrapSelectOneValue } from './helpers/unwrapSelect';
 
-describe(Support.getTestDialectTeaser('renameTable'), () => {
+describe(Support.getTestDialectTeaser('dropTable'), () => {
   let queryInterface: QueryInterface;
   beforeEach(async function () {
     queryInterface = queryInterfaceDecorator(this.sequelize.getQueryInterface());
