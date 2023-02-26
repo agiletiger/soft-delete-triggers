@@ -3,7 +3,7 @@ import { QueryInterface, QueryTypes } from "sequelize";
 export const getSoftDeleteTableNames = async (
   schema: string,
   target: QueryInterface,
-): Promise<{ tableName: string }[]> => target.sequelize.query(
+): Promise<string[]> => (await target.sequelize.query<{ tableName: string }>(
   /* sql */ `
   SELECT DISTINCT
     (TABLE_NAME) AS tableName
@@ -17,4 +17,4 @@ export const getSoftDeleteTableNames = async (
   {
     type: QueryTypes.SELECT,
   },
-);
+)).map(({ tableName }) => tableName);

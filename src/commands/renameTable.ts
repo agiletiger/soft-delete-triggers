@@ -1,10 +1,10 @@
 import { QueryInterface } from 'sequelize';
 import { RenameTableParameters } from '../types';
+import { getPrimaryKeyName } from '../utils/getPrimaryKeyName';
 import { buildCreateTriggerStatement } from './helpers/buildCreateTriggerStatement';
 import { buildDropTriggerStatement } from './helpers/buildDropTriggerStatement';
 import { getForeignKeyReferencesWithTriggers } from './helpers/getForeignKeyReferencesWithTriggers';
 import { getForeignKeysWithTriggers } from './helpers/getForeignKeysWithTriggers';
-import { getPrimaryKeyName } from './helpers/getPrimaryKeyName';
 
 export const RENAME_TABLE_COMMAND_NAME = 'renameTable';
 

@@ -1,14 +1,13 @@
 import { expect } from 'chai';
 
 import * as Support from '../../test/support';
-import { queryInterfaceDecorator } from '../index';
 import { QueryInterface, DataTypes } from 'sequelize';
 import { getSoftDeleteTableNames } from './getSoftDeleteTableNames';
 
 describe(Support.getTestDialectTeaser('getSoftDeleteTableNames'), () => {
   let queryInterface: QueryInterface;
   beforeEach(async function () {
-    queryInterface = queryInterfaceDecorator(this.sequelize.getQueryInterface());
+    queryInterface = this.sequelize.getQueryInterface();
     await queryInterface.createTable('a', {
       a_id: {
         type: DataTypes.INTEGER,
@@ -38,6 +37,6 @@ describe(Support.getTestDialectTeaser('getSoftDeleteTableNames'), () => {
     // TODO take schema name from config
     const softDeleteTableNames = await getSoftDeleteTableNames('sequelize_cascade_paranoid_test', queryInterface);
 
-    expect(softDeleteTableNames).to.be.eql([{ tableName: 'a' }]);
+    expect(softDeleteTableNames).to.be.eql(['a']);
   });
 });
