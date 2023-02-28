@@ -11,6 +11,7 @@
   "files": [
     "lib"
   ],
+  "bin": "bin/sequelize-paranoid-delete.js",
   "scripts": {
     "test-unit": "yarn ts-mocha -p lib.tsconfig.json \"src/**/*.test.ts\"",
     "test-integration": "yarn ts-mocha -p lib.tsconfig.json \"test/integration/**/*.test.ts\"",
