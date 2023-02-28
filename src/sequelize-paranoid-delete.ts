@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
 import * as readline from 'node:readline';
+import { readFile } from 'node:fs/promises';
+import * as path from 'node:path';
+
+
 import { Sequelize } from 'sequelize-typescript';
 import { QueryInterface, QueryTypes } from 'sequelize';
 import { ForeignKeyFields } from './types';
@@ -23,10 +27,10 @@ const askForNextRelation = (rl: readline.Interface, relation: ForeignKeyFields) 
   rl.prompt();
 }
 
-type ArgvType = {dbname: string, schema: string; username: string, password: string, host: string, port: number, dialect: 'mysql'};
+type Options = {dbname: string, schema: string; username: string, password: string, host: string, port: number, dialect: 'mysql'};
 
-const up = async (argv: ArgvType) => {
-  const {dbname, schema, username, password, host, port, dialect} = argv;
+const up = async (options: Options) => {
+  const {dbname, schema, username, password, host, port, dialect} = options;
   const sequelize = new Sequelize(dbname, username, password, {
     dialect,
     host,
@@ -100,6 +104,7 @@ const up = async (argv: ArgvType) => {
 };
 
 (async () => {
-  const [dbname, schema, username, password, host, port, dialect] = process.argv.slice(2);
-  await up({dbname: dbname ?? 'default', schema: schema ?? 'default', username: username ?? 'root', password: password ?? 'root', host: host ?? '127.0.0.1', port: Number(port ?? '3306'), dialect: dialect as 'mysql' ?? 'mysql'});
+  const configPath = path.join(process.cwd(), './.spdrc');
+  const config = await readFile(configPath, { encoding: 'utf8' });
+  await up(JSON.parse(config) as unknown as Options);
 })();

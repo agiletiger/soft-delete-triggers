@@ -25,6 +25,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const readline = __importStar(require("node:readline"));
+const promises_1 = require("node:fs/promises");
+const path = __importStar(require("node:path"));
 const sequelize_typescript_1 = require("sequelize-typescript");
 const buildTriggerName_1 = require("./commands/helpers/buildTriggerName");
 const getSoftDeleteTableNames_1 = require("./utils/getSoftDeleteTableNames");
@@ -38,8 +40,8 @@ const askForNextRelation = (rl, relation) => {
     rl.setPrompt(`Do you want to mark ${relation.tableName} as deleted when ${relation.referencedTableName} is deleted? (y/n) `);
     rl.prompt();
 };
-const up = async (argv) => {
-    const { dbname, schema, username, password, host, port, dialect } = argv;
+const up = async (options) => {
+    const { dbname, schema, username, password, host, port, dialect } = options;
     const sequelize = new sequelize_typescript_1.Sequelize(dbname, username, password, {
         dialect,
         host,
@@ -99,6 +101,7 @@ const up = async (argv) => {
     // );
 };
 (async () => {
-    const [dbname, schema, username, password, host, port, dialect] = process.argv.slice(2);
-    await up({ dbname: dbname ?? 'default', schema: schema ?? 'default', username: username ?? 'root', password: password ?? 'root', host: host ?? '127.0.0.1', port: Number(port ?? '3306'), dialect: dialect ?? 'mysql' });
+    const configPath = path.join(process.cwd(), './.spdrc');
+    const config = await (0, promises_1.readFile)(configPath, { encoding: 'utf8' });
+    await up(JSON.parse(config));
 })();
