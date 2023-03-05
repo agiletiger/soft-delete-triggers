@@ -120,6 +120,34 @@ OR
 yarn add sequelize-paranoid-delete
 ```
 
+#### Configuration file for CLI
+
+Put configuration options in a file named `.spdrc` in your working directory.
+
+The expected structure of the file is the following:
+
+```json
+{
+	"dbname": "",
+	"schema": "",
+	"username": "",
+	"password": "",
+	"host": "",
+	"port": "",
+	"dialect": "mysql",
+  "allowListTables": null,
+  "denyListTables": null,
+  "tenantColumns": null
+}
+```
+
+Allow list tables, deny list tables and tenant columns are optional.
+
+First two are for configuring which tables you DO want to scan or you do NOT want to scan (specify only one).
+
+Tenant columns is to prevent scanning relations between tenant foreign keys.
+
+
 ### Debug Tests
 
 `yarn node --inspect-brk ./node_modules/.bin/ts-mocha -p lib.tsconfig.json src/**/*.test.ts`

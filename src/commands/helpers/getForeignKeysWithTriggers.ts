@@ -1,7 +1,7 @@
 import { QueryInterface, QueryTypes } from 'sequelize';
 import { ForeignKeyFields } from '../../types';
-import { buildExistTriggerStatement } from './buildExistTriggerStatement';
-import { unwrapSelectOneValue } from './unwrapSelect';
+import { buildExistTriggerStatement } from '../../utils/buildExistTriggerStatement';
+import { unwrapSelectOneValue } from '../../utils/unwrapSelect';
 
 /**
  * We look for tables that reference this table (acting as a independent table)

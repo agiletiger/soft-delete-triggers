@@ -1,12 +1,12 @@
 import { QueryInterface, QueryTypes } from 'sequelize';
 import { RenameColumnParameters } from '../types';
-import { buildCreateTriggerStatement } from './helpers/buildCreateTriggerStatement';
+import { buildCreateTriggerStatement } from '../utils/buildCreateTriggerStatement';
 import { buildDropTriggerStatement } from './helpers/buildDropTriggerStatement';
 import { getDependentColumnFromTriggerActionStatement } from './helpers/getDependentColumnFromTriggerActionStatement';
 import { getDependentTableFromTriggerActionStatement } from './helpers/getDependentTableFromTriggerActionStatement';
 import { getIndependentColumnFromTriggerActionStatement } from './helpers/getIndependentColumnFromTriggerActionStatement';
-import { getTriggersInformation } from './helpers/getTriggersInformation';
-import { unwrapSelectMany } from './helpers/unwrapSelect';
+import { getTriggersInformation } from '../utils/getTriggersInformation';
+import { unwrapSelectMany } from '../utils/unwrapSelect';
 
 export const RENAME_COLUMN_COMMAND_NAME = 'renameColumn';
 

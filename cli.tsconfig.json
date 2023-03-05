@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "outDir": "bin"
+  },
+  "files": [
+    "src/sequelize-paranoid-delete.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

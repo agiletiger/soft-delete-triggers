@@ -3,9 +3,9 @@ import { expect } from 'chai';
 import * as Support from '../../test/support';
 import { queryInterfaceDecorator } from '../index';
 import { QueryInterface, DataTypes, QueryTypes } from 'sequelize';
-import { buildExistTriggerStatement } from './helpers/buildExistTriggerStatement';
-import { unwrapSelectOneValue } from './helpers/unwrapSelect';
-import { getTriggersInformation } from './helpers/getTriggersInformation';
+import { buildExistTriggerStatement } from '../utils/buildExistTriggerStatement';
+import { unwrapSelectOneValue } from '../utils/unwrapSelect';
+import { getTriggersInformation } from '../utils/getTriggersInformation';
 
 describe(Support.getTestDialectTeaser('renameColumn'), () => {
   let queryInterface: QueryInterface;
