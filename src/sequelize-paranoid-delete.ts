@@ -27,7 +27,18 @@ const askForNextRelation = (rl: readline.Interface, relation: ForeignKeyFields) 
   rl.prompt();
 }
 
-type Options = {dbname: string, schema: string; username: string, password: string, host: string, port: number, dialect: 'mysql'};
+type Options = {
+  dbname: string,
+  schema: string;
+  username: string,
+  password: string,
+  host: string,
+  port: number,
+  dialect: 'mysql',
+  allowListTables: string[] | null,
+  denyListTables: string[] | null,
+  tenantColumns: string[] | null
+};
 
 const up = async (options: Options) => {
   const {dbname, schema, username, password, host, port, dialect} = options;
@@ -40,14 +51,28 @@ const up = async (options: Options) => {
   });
   const queryInterface: QueryInterface = sequelize.getQueryInterface();
 
-  const softDeleteTableNames = await getSoftDeleteTableNames(schema, queryInterface);
+  const softDeleteTableNames = (
+    await getSoftDeleteTableNames(schema, queryInterface)
+  )
+  .filter((tableName) => {
+    if (options.allowListTables) {
+      return options.allowListTables.includes(tableName);
+    }
+    if (options.denyListTables) {
+      return !options.denyListTables.includes(tableName);
+    }
+    return true;
+  });
 
   const foreignKeysTableRelations = (
     await getForeignKeysTableRelations(softDeleteTableNames, schema, queryInterface)
   )
-  .filter(({ tableName, referencedTableName, referencedColumnName }) =>
-    referencedColumnName !== 'centralizedCompanyId'
-  );
+  .filter(({ referencedColumnName }) => {
+    if (options.tenantColumns) {
+      return !options.tenantColumns.includes(referencedColumnName);
+    }
+    return true;
+  });
 
   const uniqueForeignKeys = dedupe(foreignKeysTableRelations, ({ referencedTableName, tableName }) =>
     buildTriggerName(referencedTableName, tableName),
@@ -106,5 +131,9 @@ const up = async (options: Options) => {
 (async () => {
   const configPath = path.join(process.cwd(), './.spdrc');
   const config = await readFile(configPath, { encoding: 'utf8' });
-  await up(JSON.parse(config) as unknown as Options);
+  const options = JSON.parse(config) as unknown as Options
+  if (options.allowListTables && options.denyListTables) {
+    throw new Error('You can only use either allowListTables or denyListTables, not both');
+  }
+  await up(options);
 })();

@@ -50,9 +50,23 @@ const up = async (options) => {
         logging: false,
     });
     const queryInterface = sequelize.getQueryInterface();
-    const softDeleteTableNames = await (0, getSoftDeleteTableNames_1.getSoftDeleteTableNames)(schema, queryInterface);
+    const softDeleteTableNames = (await (0, getSoftDeleteTableNames_1.getSoftDeleteTableNames)(schema, queryInterface))
+        .filter((tableName) => {
+        if (options.allowListTables) {
+            return options.allowListTables.includes(tableName);
+        }
+        if (options.denyListTables) {
+            return !options.denyListTables.includes(tableName);
+        }
+        return true;
+    });
     const foreignKeysTableRelations = (await (0, getForeignKeysTableRelations_1.getForeignKeysTableRelations)(softDeleteTableNames, schema, queryInterface))
-        .filter(({ tableName, referencedTableName, referencedColumnName }) => referencedColumnName !== 'centralizedCompanyId');
+        .filter(({ referencedColumnName }) => {
+        if (options.tenantColumns) {
+            return !options.tenantColumns.includes(referencedColumnName);
+        }
+        return true;
+    });
     const uniqueForeignKeys = dedupe(foreignKeysTableRelations, ({ referencedTableName, tableName }) => (0, buildTriggerName_1.buildTriggerName)(referencedTableName, tableName));
     console.log(uniqueForeignKeys.pop());
     console.log(uniqueForeignKeys.pop());
@@ -103,5 +117,9 @@ const up = async (options) => {
 (async () => {
     const configPath = path.join(process.cwd(), './.spdrc');
     const config = await (0, promises_1.readFile)(configPath, { encoding: 'utf8' });
-    await up(JSON.parse(config));
+    const options = JSON.parse(config);
+    if (options.allowListTables && options.denyListTables) {
+        throw new Error('You can only use either allowListTables or denyListTables, not both');
+    }
+    await up(options);
 })();
