@@ -3,8 +3,8 @@ import { expect } from 'chai';
 import * as Support from '../../test/support';
 import { queryInterfaceDecorator } from '../index';
 import { QueryInterface, DataTypes, QueryTypes } from 'sequelize';
-import { buildExistTriggerStatement } from './helpers/buildExistTriggerStatement';
-import { unwrapSelectOneValue } from './helpers/unwrapSelect';
+import { buildExistTriggerStatement } from '../utils/buildExistTriggerStatement';
+import { unwrapSelectOneValue } from '../utils/unwrapSelect';
 
 describe(Support.getTestDialectTeaser('dropTable'), () => {
   let queryInterface: QueryInterface;

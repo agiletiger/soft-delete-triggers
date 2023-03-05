@@ -1,6 +1,6 @@
 import { ModelAttributeColumnOptions, QueryInterface } from 'sequelize';
 import { AddColumnParameters, Options } from '../types';
-import { buildCreateTriggerStatement } from './helpers/buildCreateTriggerStatement';
+import { buildCreateTriggerStatement } from '../utils/buildCreateTriggerStatement';
 import { getPrimaryTableProps } from './helpers/getPrimaryTableProps';
 import { hasParanoidCascadeOnDelete } from './helpers/hasParanoidCascadeOnDelete';
 

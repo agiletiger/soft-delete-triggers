@@ -2,8 +2,8 @@ import { QueryInterface, QueryTypes } from 'sequelize';
 import { RemoveColumnParameters } from '../types';
 import { buildDropTriggerStatement } from './helpers/buildDropTriggerStatement';
 import { getDependentTableFromTriggerActionStatement } from './helpers/getDependentTableFromTriggerActionStatement';
-import { getTriggersInformation } from './helpers/getTriggersInformation';
-import { unwrapSelectMany } from './helpers/unwrapSelect';
+import { getTriggersInformation } from '../utils/getTriggersInformation';
+import { unwrapSelectMany } from '../utils/unwrapSelect';
 
 export const REMOVE_COLUMN_COMMAND_NAME = 'removeColumn';
 

@@ -1,4 +1,4 @@
-import { buildTriggerName } from './buildTriggerName';
+import { buildTriggerName } from '../../utils/buildTriggerName';
 
 export const buildDropTriggerStatement = (
   primaryTable: string,

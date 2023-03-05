@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildCreateTriggerStatement = void 0;
-const buildTriggerName_1 = require("../../utils/buildTriggerName");
+const buildTriggerName_1 = require("./buildTriggerName");
 const buildCreateTriggerStatement = (primaryTable, primaryKey, foreignTable, foreignKey) => /* sql */ `
   CREATE TRIGGER ${(0, buildTriggerName_1.buildTriggerName)(primaryTable, foreignTable)}
   AFTER UPDATE

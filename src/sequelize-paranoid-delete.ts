@@ -8,24 +8,12 @@ import * as path from 'node:path';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryInterface, QueryTypes } from 'sequelize';
 import { ForeignKeyFields } from './types';
-import { buildCreateTriggerStatement } from './commands/helpers/buildCreateTriggerStatement';
-import { buildTriggerName } from './commands/helpers/buildTriggerName';
+import { buildCreateTriggerStatement } from './utils/buildCreateTriggerStatement';
+import { buildTriggerName } from './utils/buildTriggerName';
 import { getSoftDeleteTableNames } from './utils/getSoftDeleteTableNames';
 import { getForeignKeysTableRelations } from './utils/getForeignKeysTableRelations';
-
-
-const dedupe = <T>(array: readonly T[], hasher: (e: T) => string): T[] => {
-  const uniques: { [hash: string]: T } = {};
-
-  array.forEach((item) => (uniques[hasher(item)] = item));
-
-  return Object.values(uniques);
-};
-
-const askForNextRelation = (rl: readline.Interface, relation: ForeignKeyFields) => {
-  rl.setPrompt(`Do you want to mark ${relation.tableName} as deleted when ${relation.referencedTableName} is deleted? (y/n) `);
-  rl.prompt();
-}
+import { unwrapSelectOneValue } from './utils/unwrapSelect';
+import { buildExistTriggerStatement } from './utils/buildExistTriggerStatement';
 
 type Options = {
   dbname: string,
@@ -40,19 +28,47 @@ type Options = {
   tenantColumns: string[] | null
 };
 
-const up = async (options: Options) => {
-  const {dbname, schema, username, password, host, port, dialect} = options;
-  const sequelize = new Sequelize(dbname, username, password, {
-    dialect,
-    host,
-    port,
-    schema,
-    logging: false,
-  });
-  const queryInterface: QueryInterface = sequelize.getQueryInterface();
+const dedupe = <T>(array: readonly T[], hasher: (e: T) => string): T[] => {
+  const uniques: { [hash: string]: T } = {};
 
+  array.forEach((item) => (uniques[hasher(item)] = item));
+
+  return Object.values(uniques);
+};
+
+const getNextRelation = async (tableRelations: ForeignKeyFields[], queryInterface: QueryInterface): Promise<ForeignKeyFields | null> => {
+  const relation = tableRelations[0];
+  if (!relation) {
+    return null;
+  }
+
+  const triggerExists = !!unwrapSelectOneValue(
+    await queryInterface.sequelize.query(buildExistTriggerStatement(relation.referencedTableName, relation.tableName), {
+      type: QueryTypes.SELECT,
+    }),
+  );
+
+  if (triggerExists) {
+    tableRelations.shift();
+    return getNextRelation(tableRelations, queryInterface);
+  }
+
+  return relation;
+}
+
+const askForNextRelation = async (rl: readline.Interface, tableRelations: ForeignKeyFields[], queryInterface: QueryInterface) => {
+  const relation = await getNextRelation(tableRelations, queryInterface);
+  if (!relation) {
+    rl.close();
+    return;
+  }
+  rl.setPrompt(`What do you want to do with ${relation.tableName} when ${relation.referencedTableName} is deleted [c,na,sn,st,s,q,?]? `);
+  rl.prompt();
+}
+
+const getTableRelations = async (options: Options, queryInterface: QueryInterface) => {
   const softDeleteTableNames = (
-    await getSoftDeleteTableNames(schema, queryInterface)
+    await getSoftDeleteTableNames(options.schema, queryInterface)
   )
   .filter((tableName) => {
     if (options.allowListTables) {
@@ -65,7 +81,7 @@ const up = async (options: Options) => {
   });
 
   const foreignKeysTableRelations = (
-    await getForeignKeysTableRelations(softDeleteTableNames, schema, queryInterface)
+    await getForeignKeysTableRelations(softDeleteTableNames, options.schema, queryInterface)
   )
   .filter(({ referencedColumnName }) => {
     if (options.tenantColumns) {
@@ -74,12 +90,21 @@ const up = async (options: Options) => {
     return true;
   });
 
-  const uniqueForeignKeys = dedupe(foreignKeysTableRelations, ({ referencedTableName, tableName }) =>
+  return dedupe(foreignKeysTableRelations, ({ referencedTableName, tableName }) =>
     buildTriggerName(referencedTableName, tableName),
   );
+}
 
-  console.log(uniqueForeignKeys.pop());
-  console.log(uniqueForeignKeys.pop());
+const up = async (options: Options) => {
+  const {dbname, schema, username, password, host, port, dialect} = options;
+  const sequelize = new Sequelize(dbname, username, password, {
+    dialect,
+    host,
+    port,
+    schema,
+    logging: false,
+  });
+  const queryInterface: QueryInterface = sequelize.getQueryInterface();
 
   const rl = readline.createInterface({
     input: process.stdin,
@@ -89,43 +114,110 @@ const up = async (options: Options) => {
 
   rl.prompt();
 
-  rl.on('line', (line) => {
+  let tableRelations: ForeignKeyFields[] = [];
+  let scanned = false;
+
+  rl.on('line', async (line) => {
     switch (line.trim()) {
       case 'y':
-        if (uniqueForeignKeys.length) {
-          askForNextRelation(rl, uniqueForeignKeys.pop() as ForeignKeyFields);
+        if (scanned) {
+          console.error('Invalid option.')
+          rl.prompt();
+          break;
         } else {
-          console.log('Finished');
+          scanned = true;
+          tableRelations = await getTableRelations(options, queryInterface);
+        }
+        await askForNextRelation(rl, tableRelations, queryInterface);
+        break;
+      case 'c':
+        if (!scanned) {
+          console.error('Invalid option.')
+          rl.prompt();
+          break;
+        }
+        try {
+          const { tableName, columnName, referencedTableName, referencedColumnName } = tableRelations[0];
+          const triggerStatement = buildCreateTriggerStatement(referencedTableName, referencedColumnName, tableName, columnName);
+          await queryInterface.sequelize.query(triggerStatement);
+          console.info(`Created trigger for ${tableName} when ${referencedTableName} is marked as deleted.`);
+        } catch (error) {
+          console.error(error);
+        } finally {
+          tableRelations.shift();
+          await askForNextRelation(rl, tableRelations, queryInterface);
         }
         break;
+      case 'na':
+        if (!scanned) {
+          console.error('Invalid option.')
+        } else {
+          console.warn('Not implemented yet.');
+        }
+        rl.prompt();
+        break;
+      case 'sn':
+        if (!scanned) {
+          console.error('Invalid option.')
+        } else {
+          console.warn('Not implemented yet.');
+        }
+        rl.prompt();
+        break;
+      case 'st':
+        if (!scanned) {
+          console.error('Invalid option.')
+        } else {
+          console.warn('Not implemented yet.');
+        }
+        rl.prompt();
+        break;
+      case 's':
+        if (!scanned) {
+          console.error('Invalid option.')
+          rl.prompt();
+          break;
+        }
+        tableRelations.shift();
+        await askForNextRelation(rl, tableRelations, queryInterface);
+        break;
+      case '?':
+        if (!scanned) {
+          console.error('Invalid option.')
+        } else {
+          console.info('c - cascade.');
+          console.info('na - no action.');
+          console.info('sn - set null.');
+          console.info('st - set default.');
+          console.info('s - skip.');
+        }
+        rl.prompt();
+        break;
       case 'n':
+        if (scanned) {
+          console.error('Invalid option.')
+          rl.prompt();
+          break;
+        }
+        rl.close();
+        break;
+      case 'q':
+        if (!scanned) {
+          console.error('Invalid option.')
+          rl.prompt();
+          break;
+        }
         rl.close();
         break;
       default:
-        console.log(`Say what? I might have heard '${line.trim()}'`);
+        console.error('Invalid option.');
+        rl.prompt();
         break;
     }
   }).on('close', () => {
-    console.log('Have a great day!');
+    console.info('There are no more relations to process. Exiting...');
     process.exit(0);
   });
-
-  // await Promise.all(
-  //   uniqueForeignKeys
-  //     .filter(({ referencedTableName }) =>
-  //       tables.find((t) => t.primaryTableName === referencedTableName),
-  //     )
-  //     .map(({ tableName, columnName, referencedTableName, referencedColumnName }) =>
-  //       sequelize.query(
-  //         buildCreateTriggerStatement(
-  //           referencedTableName,
-  //           referencedColumnName,
-  //           tableName,
-  //           columnName,
-  //         ),
-  //       ).then(() => console.log(`Created trigger for ${tableName}.${columnName} and ${referencedTableName}.${referencedColumnName}`)),
-  //     ),
-  // );
 };
 
 (async () => {

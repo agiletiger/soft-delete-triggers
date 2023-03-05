@@ -1,7 +1,7 @@
 import { QueryInterface } from 'sequelize';
 import { RenameTableParameters } from '../types';
 import { getPrimaryKeyName } from '../utils/getPrimaryKeyName';
-import { buildCreateTriggerStatement } from './helpers/buildCreateTriggerStatement';
+import { buildCreateTriggerStatement } from '../utils/buildCreateTriggerStatement';
 import { buildDropTriggerStatement } from './helpers/buildDropTriggerStatement';
 import { getForeignKeyReferencesWithTriggers } from './helpers/getForeignKeyReferencesWithTriggers';
 import { getForeignKeysWithTriggers } from './helpers/getForeignKeysWithTriggers';
