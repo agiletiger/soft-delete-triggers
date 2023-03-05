@@ -4,7 +4,7 @@ const MAX_TABLE_NAME_LENGTH = 16;
 
 export const buildTriggerName = (primaryTable: string, foreignTable: string): string =>
   `on_${
-    primaryTable.length > MAX_TABLE_NAME_LENGTH
+    primaryTable.length  > MAX_TABLE_NAME_LENGTH
       ? primaryTable.replace(/[aeiou]/gi, '')
       : primaryTable
   }_del_upd_${

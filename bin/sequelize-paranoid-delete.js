@@ -30,16 +30,10 @@ const path = __importStar(require("node:path"));
 const sequelize_typescript_1 = require("sequelize-typescript");
 const sequelize_1 = require("sequelize");
 const buildCreateTriggerStatement_1 = require("./utils/buildCreateTriggerStatement");
-const buildTriggerName_1 = require("./utils/buildTriggerName");
 const getSoftDeleteTableNames_1 = require("./utils/getSoftDeleteTableNames");
 const getForeignKeysTableRelations_1 = require("./utils/getForeignKeysTableRelations");
 const unwrapSelect_1 = require("./utils/unwrapSelect");
 const buildExistTriggerStatement_1 = require("./utils/buildExistTriggerStatement");
-const dedupe = (array, hasher) => {
-    const uniques = {};
-    array.forEach((item) => (uniques[hasher(item)] = item));
-    return Object.values(uniques);
-};
 const getNextRelation = async (tableRelations, queryInterface) => {
     const relation = tableRelations[0];
     if (!relation) {
@@ -74,14 +68,13 @@ const getTableRelations = async (options, queryInterface) => {
         }
         return true;
     });
-    const foreignKeysTableRelations = (await (0, getForeignKeysTableRelations_1.getForeignKeysTableRelations)(softDeleteTableNames, options.schema, queryInterface))
+    return (await (0, getForeignKeysTableRelations_1.getForeignKeysTableRelations)(softDeleteTableNames, options.schema, queryInterface))
         .filter(({ referencedColumnName }) => {
         if (options.tenantColumns) {
             return !options.tenantColumns.includes(referencedColumnName);
         }
         return true;
     });
-    return dedupe(foreignKeysTableRelations, ({ referencedTableName, tableName }) => (0, buildTriggerName_1.buildTriggerName)(referencedTableName, tableName));
 };
 const up = async (options) => {
     const { dbname, schema, username, password, host, port, dialect } = options;

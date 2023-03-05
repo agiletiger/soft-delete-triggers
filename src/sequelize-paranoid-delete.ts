@@ -9,7 +9,6 @@ import { Sequelize } from 'sequelize-typescript';
 import { QueryInterface, QueryTypes } from 'sequelize';
 import { ForeignKeyFields } from './types';
 import { buildCreateTriggerStatement } from './utils/buildCreateTriggerStatement';
-import { buildTriggerName } from './utils/buildTriggerName';
 import { getSoftDeleteTableNames } from './utils/getSoftDeleteTableNames';
 import { getForeignKeysTableRelations } from './utils/getForeignKeysTableRelations';
 import { unwrapSelectOneValue } from './utils/unwrapSelect';
@@ -26,14 +25,6 @@ type Options = {
   allowListTables: string[] | null,
   denyListTables: string[] | null,
   tenantColumns: string[] | null
-};
-
-const dedupe = <T>(array: readonly T[], hasher: (e: T) => string): T[] => {
-  const uniques: { [hash: string]: T } = {};
-
-  array.forEach((item) => (uniques[hasher(item)] = item));
-
-  return Object.values(uniques);
 };
 
 const getNextRelation = async (tableRelations: ForeignKeyFields[], queryInterface: QueryInterface): Promise<ForeignKeyFields | null> => {
@@ -80,7 +71,7 @@ const getTableRelations = async (options: Options, queryInterface: QueryInterfac
     return true;
   });
 
-  const foreignKeysTableRelations = (
+  return (
     await getForeignKeysTableRelations(softDeleteTableNames, options.schema, queryInterface)
   )
   .filter(({ referencedColumnName }) => {
@@ -89,10 +80,6 @@ const getTableRelations = async (options: Options, queryInterface: QueryInterfac
     }
     return true;
   });
-
-  return dedupe(foreignKeysTableRelations, ({ referencedTableName, tableName }) =>
-    buildTriggerName(referencedTableName, tableName),
-  );
 }
 
 const up = async (options: Options) => {
