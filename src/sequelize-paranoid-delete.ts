@@ -7,7 +7,7 @@ import * as path from 'node:path';
 
 import { Sequelize } from 'sequelize-typescript';
 import { QueryInterface, QueryTypes } from 'sequelize';
-import { ForeignKeyFields } from './types';
+import { ForeignKeyReferenceNames } from './types';
 import { buildCreateTriggerStatement } from './utils/buildCreateTriggerStatement';
 import { getSoftDeleteTableNames } from './utils/getSoftDeleteTableNames';
 import { getForeignKeysTableRelations } from './utils/getForeignKeysTableRelations';
@@ -27,14 +27,14 @@ type Options = {
   tenantColumns: string[] | null
 };
 
-const getNextRelation = async (tableRelations: ForeignKeyFields[], queryInterface: QueryInterface): Promise<ForeignKeyFields | null> => {
+const getNextRelation = async (tableRelations: ForeignKeyReferenceNames[], queryInterface: QueryInterface): Promise<ForeignKeyReferenceNames | null> => {
   const relation = tableRelations[0];
   if (!relation) {
     return null;
   }
 
   const triggerExists = !!unwrapSelectOneValue(
-    await queryInterface.sequelize.query(buildExistTriggerStatement(relation.referencedTableName, relation.referencedColumnName, relation.tableName, relation.columnName), {
+    await queryInterface.sequelize.query(buildExistTriggerStatement(relation.independentTableName, relation.independentTableColumnName, relation.dependentTableName, relation.dependentTableColumnName), {
       type: QueryTypes.SELECT,
     }),
   );
@@ -47,13 +47,13 @@ const getNextRelation = async (tableRelations: ForeignKeyFields[], queryInterfac
   return relation;
 }
 
-const askForNextRelation = async (rl: readline.Interface, tableRelations: ForeignKeyFields[], queryInterface: QueryInterface) => {
+const askForNextRelation = async (rl: readline.Interface, tableRelations: ForeignKeyReferenceNames[], queryInterface: QueryInterface) => {
   const relation = await getNextRelation(tableRelations, queryInterface);
   if (!relation) {
     rl.close();
     return;
   }
-  rl.setPrompt(`What do you want to do with ${relation.tableName} when ${relation.referencedTableName} is deleted [c,na,sn,st,s,q,?]? `);
+  rl.setPrompt(`What do you want to do with ${relation.dependentTableName} when ${relation.independentTableName} is deleted [c,na,sn,st,s,q,?]? `);
   rl.prompt();
 }
 
@@ -74,9 +74,9 @@ const getTableRelations = async (options: Options, queryInterface: QueryInterfac
   return (
     await getForeignKeysTableRelations(softDeleteTableNames, options.schema, queryInterface)
   )
-  .filter(({ referencedColumnName }) => {
+  .filter(({ independentTableColumnName }) => {
     if (options.tenantColumns) {
-      return !options.tenantColumns.includes(referencedColumnName);
+      return !options.tenantColumns.includes(independentTableColumnName);
     }
     return true;
   });
@@ -101,7 +101,7 @@ const up = async (options: Options) => {
 
   rl.prompt();
 
-  let tableRelations: ForeignKeyFields[] = [];
+  let tableRelations: ForeignKeyReferenceNames[] = [];
   let scanned = false;
 
   rl.on('line', async (line) => {
@@ -124,7 +124,7 @@ const up = async (options: Options) => {
           break;
         }
         try {
-          const { tableName, columnName, referencedTableName, referencedColumnName } = tableRelations[0];
+          const { dependentTableName: tableName, dependentTableColumnName: columnName, independentTableName: referencedTableName, independentTableColumnName: referencedColumnName } = tableRelations[0];
           const triggerStatement = buildCreateTriggerStatement(referencedTableName, referencedColumnName, tableName, columnName);
           await queryInterface.sequelize.query(triggerStatement);
           console.info(`Created trigger for ${tableName} when ${referencedTableName} is marked as deleted.`);

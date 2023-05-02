@@ -1,5 +1,5 @@
 import { QueryInterface, QueryTypes } from 'sequelize';
-import { ForeignKeyFields } from '../../types';
+import { ForeignKeyReferenceNames, GetForeignKeyReferencesForTableResult } from '../../types';
 import { buildExistTriggerStatement } from '../../utils/buildExistTriggerStatement';
 import { unwrapSelectOneValue } from '../../utils/unwrapSelect';
 
@@ -14,20 +14,21 @@ export const getForeignKeyReferencesWithTriggers = async (
   tableName: string,
   target: QueryInterface,
 ) => {
-  const foreignKeyReferences = (await target.getForeignKeyReferencesForTable(
+  const foreignKeysNames: ForeignKeyReferenceNames[] = (await target.getForeignKeyReferencesForTable(
     tableName,
-  )) as ForeignKeyFields[];
+  ) as GetForeignKeyReferencesForTableResult[])
+  .map(({ referencedTableName, referencedColumnName, tableName, columnName }) => ({independentTableName: referencedTableName, independentTableColumnName: referencedColumnName, dependentTableName: tableName, dependentTableColumnName: columnName}));
 
   return (
     await Promise.all(
-      foreignKeyReferences.map(async ({ referencedTableName, referencedColumnName, columnName }) => {
+      foreignKeysNames.map(async ({ independentTableName, independentTableColumnName, dependentTableColumnName }) => {
         const triggerExists = !!unwrapSelectOneValue(
-          await target.sequelize.query(buildExistTriggerStatement(referencedTableName, referencedColumnName, tableName, columnName), {
+          await target.sequelize.query(buildExistTriggerStatement(independentTableName, independentTableColumnName, tableName, dependentTableColumnName), {
             type: QueryTypes.SELECT,
           }),
         );
-        return triggerExists ? { referencedTableName, referencedColumnName, tableName, columnName } : null;
+        return triggerExists ? { independentTableName, independentTableColumnName, dependentTableName: tableName, dependentTableColumnName } : null;
       }),
     )
-  ).filter((field) => !!field) as ForeignKeyFields[];
+  ).filter((field) => !!field) as ForeignKeyReferenceNames[];
 };

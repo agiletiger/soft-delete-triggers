@@ -69,8 +69,8 @@ describe(Support.getTestDialectTeaser('getForeignKeysTableRelations'), () => {
     const foreignKeysTableRelations = await getForeignKeysTableRelations(['a'], 'sequelize_cascade_paranoid_test', queryInterface);
 
     expect(foreignKeysTableRelations).to.be.eql([
-      { tableName: 'b', columnName: 'a_id', referencedTableName: 'a', referencedColumnName: 'a_id' },
-      { tableName: 'c', columnName: 'a_id', referencedTableName: 'a', referencedColumnName: 'a_id' }
+      { dependentTableName: 'b', dependentTableColumnName: 'a_id', independentTableName: 'a', independentTableColumnName: 'a_id' },
+      { dependentTableName: 'c', dependentTableColumnName: 'a_id', independentTableName: 'a', independentTableColumnName: 'a_id' }
     ]);
   });
 
@@ -78,7 +78,7 @@ describe(Support.getTestDialectTeaser('getForeignKeysTableRelations'), () => {
     // TODO take schema name from config
     const foreignKeysTableRelations = await getForeignKeysTableRelations(['b'], 'sequelize_cascade_paranoid_test', queryInterface);
 
-    expect(foreignKeysTableRelations).to.be.eql([{ tableName: 'c', columnName: 'b_id', referencedTableName: 'b', referencedColumnName: 'b_id' }]);
+    expect(foreignKeysTableRelations).to.be.eql([{ dependentTableName: 'c', dependentTableColumnName: 'b_id', independentTableName: 'b', independentTableColumnName: 'b_id' }]);
   });
 
   it('should get the tables that reference c', async function () {

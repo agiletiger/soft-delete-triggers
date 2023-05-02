@@ -1,5 +1,5 @@
 import { QueryInterface, QueryTypes } from 'sequelize';
-import { ForeignKeyFields } from '../../types';
+import { ForeignKeyReferenceNames, GetForeignKeyQueryResult } from '../../types';
 import { buildExistTriggerStatement } from '../../utils/buildExistTriggerStatement';
 import { unwrapSelectOneValue } from '../../utils/unwrapSelect';
 
@@ -15,22 +15,23 @@ export const getForeignKeysWithTriggers = async (
   primaryKey: string,
   target: QueryInterface,
 ) => {
-  const foreignKeys = (await target.sequelize.query(
+  const foreignKeysNames: ForeignKeyReferenceNames[] = (await target.sequelize.query<GetForeignKeyQueryResult>(
     // @ts-expect-error queryGenerator has no types and getForeignKeyQuery is private
     target.queryGenerator.getForeignKeyQuery(tableName, primaryKey),
     { type: QueryTypes.SELECT },
-  )) as ForeignKeyFields[];
+  ))
+  .map(({ referencedTableName, referencedColumnName, tableName, columnName }) => ({independentTableName: referencedTableName, independentTableColumnName: referencedColumnName, dependentTableName: tableName, dependentTableColumnName: columnName}));
 
   return (
     await Promise.all(
-      foreignKeys.map(async ({ referencedTableName, referencedColumnName, tableName, columnName }) => {
+      foreignKeysNames.map(async ({ independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName }) => {
         const triggerExists = !!unwrapSelectOneValue(
-          await target.sequelize.query(buildExistTriggerStatement(referencedTableName, referencedColumnName, tableName, columnName), {
+          await target.sequelize.query(buildExistTriggerStatement(independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName), {
             type: QueryTypes.SELECT,
           }),
         );
-        return triggerExists ? { tableName, columnName } : null;
+        return triggerExists ? { dependentTableName, dependentTableColumnName } : null;
       }),
     )
-  ).filter((field) => !!field) as ForeignKeyFields[];
+  ).filter((field) => !!field) as ForeignKeyReferenceNames[];
 };

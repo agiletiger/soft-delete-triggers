@@ -11,6 +11,6 @@ const getForeignKeysTableRelations = async (tableNames, schema, queryInterface) 
     }
     return (await queryInterface.sequelize.query(
     // @ts-expect-error queryGenerator has no types and getForeignKeyQuery is private
-    queryInterface.queryGenerator.getForeignKeyQuery({ schema, tableName }, primaryKeyName), { type: sequelize_1.QueryTypes.SELECT })).map(({ tableName, columnName, referencedTableName, referencedColumnName, }) => ({ tableName, columnName, referencedTableName, referencedColumnName, }));
+    queryInterface.queryGenerator.getForeignKeyQuery({ schema, tableName }, primaryKeyName), { type: sequelize_1.QueryTypes.SELECT })).map(({ referencedTableName, referencedColumnName, tableName, columnName }) => ({ independentTableName: referencedTableName, independentTableColumnName: referencedColumnName, dependentTableName: tableName, dependentTableColumnName: columnName }));
 }))).flat();
 exports.getForeignKeysTableRelations = getForeignKeysTableRelations;

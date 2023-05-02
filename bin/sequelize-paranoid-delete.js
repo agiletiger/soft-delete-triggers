@@ -39,7 +39,7 @@ const getNextRelation = async (tableRelations, queryInterface) => {
     if (!relation) {
         return null;
     }
-    const triggerExists = !!(0, unwrapSelect_1.unwrapSelectOneValue)(await queryInterface.sequelize.query((0, buildExistTriggerStatement_1.buildExistTriggerStatement)(relation.referencedTableName, relation.referencedColumnName, relation.tableName, relation.columnName), {
+    const triggerExists = !!(0, unwrapSelect_1.unwrapSelectOneValue)(await queryInterface.sequelize.query((0, buildExistTriggerStatement_1.buildExistTriggerStatement)(relation.independentTableName, relation.independentTableColumnName, relation.dependentTableName, relation.dependentTableColumnName), {
         type: sequelize_1.QueryTypes.SELECT,
     }));
     if (triggerExists) {
@@ -54,7 +54,7 @@ const askForNextRelation = async (rl, tableRelations, queryInterface) => {
         rl.close();
         return;
     }
-    rl.setPrompt(`What do you want to do with ${relation.tableName} when ${relation.referencedTableName} is deleted [c,na,sn,st,s,q,?]? `);
+    rl.setPrompt(`What do you want to do with ${relation.dependentTableName} when ${relation.independentTableName} is deleted [c,na,sn,st,s,q,?]? `);
     rl.prompt();
 };
 const getTableRelations = async (options, queryInterface) => {
@@ -69,9 +69,9 @@ const getTableRelations = async (options, queryInterface) => {
         return true;
     });
     return (await (0, getForeignKeysTableRelations_1.getForeignKeysTableRelations)(softDeleteTableNames, options.schema, queryInterface))
-        .filter(({ referencedColumnName }) => {
+        .filter(({ independentTableColumnName }) => {
         if (options.tenantColumns) {
-            return !options.tenantColumns.includes(referencedColumnName);
+            return !options.tenantColumns.includes(independentTableColumnName);
         }
         return true;
     });
@@ -115,7 +115,7 @@ const up = async (options) => {
                     break;
                 }
                 try {
-                    const { tableName, columnName, referencedTableName, referencedColumnName } = tableRelations[0];
+                    const { dependentTableName: tableName, dependentTableColumnName: columnName, independentTableName: referencedTableName, independentTableColumnName: referencedColumnName } = tableRelations[0];
                     const triggerStatement = (0, buildCreateTriggerStatement_1.buildCreateTriggerStatement)(referencedTableName, referencedColumnName, tableName, columnName);
                     await queryInterface.sequelize.query(triggerStatement);
                     console.info(`Created trigger for ${tableName} when ${referencedTableName} is marked as deleted.`);

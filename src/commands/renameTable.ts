@@ -33,7 +33,7 @@ export const renameTable = async (target: QueryInterface, parameters: RenameTabl
   // table acting as a dependent table
   if (foreignKeyReferencesWithTriggers.length) {
     await Promise.all(
-      foreignKeyReferencesWithTriggers.map(({ referencedTableName, referencedColumnName, columnName }) =>
+      foreignKeyReferencesWithTriggers.map(({ independentTableName: referencedTableName, independentTableColumnName: referencedColumnName, dependentTableColumnName: columnName }) =>
         target.sequelize.query(
           buildCreateTriggerStatement(
             referencedTableName,
@@ -46,7 +46,7 @@ export const renameTable = async (target: QueryInterface, parameters: RenameTabl
     );
 
     await Promise.all(
-      foreignKeyReferencesWithTriggers.map(({ referencedTableName, referencedColumnName, columnName }) =>
+      foreignKeyReferencesWithTriggers.map(({ independentTableName: referencedTableName, independentTableColumnName: referencedColumnName, dependentTableColumnName: columnName }) =>
         target.sequelize.query(buildDropTriggerStatement(referencedTableName, referencedColumnName, oldName as string, columnName)),
       ),
     );
@@ -55,7 +55,7 @@ export const renameTable = async (target: QueryInterface, parameters: RenameTabl
   // acting as a independent table implementation
   if (foreignKeysWithTriggers.length) {
     await Promise.all(
-      foreignKeysWithTriggers.map(({ tableName, columnName }) =>
+      foreignKeysWithTriggers.map(({ dependentTableName: tableName, dependentTableColumnName: columnName }) =>
         target.sequelize.query(
           buildCreateTriggerStatement(
             newName as string,
@@ -68,7 +68,7 @@ export const renameTable = async (target: QueryInterface, parameters: RenameTabl
     );
 
     await Promise.all(
-      foreignKeysWithTriggers.map(({ tableName, columnName }) =>
+      foreignKeysWithTriggers.map(({ dependentTableName: tableName, dependentTableColumnName: columnName }) =>
         target.sequelize.query(buildDropTriggerStatement(oldName as string, primaryKey as string, tableName, columnName)),
       ),
     );
