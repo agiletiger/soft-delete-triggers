@@ -39,7 +39,7 @@ const getNextRelation = async (tableRelations, queryInterface) => {
     if (!relation) {
         return null;
     }
-    const triggerExists = !!(0, unwrapSelect_1.unwrapSelectOneValue)(await queryInterface.sequelize.query((0, buildExistTriggerStatement_1.buildExistTriggerStatement)(relation.referencedTableName, relation.tableName), {
+    const triggerExists = !!(0, unwrapSelect_1.unwrapSelectOneValue)(await queryInterface.sequelize.query((0, buildExistTriggerStatement_1.buildExistTriggerStatement)(relation.referencedTableName, relation.referencedColumnName, relation.tableName, relation.columnName), {
         type: sequelize_1.QueryTypes.SELECT,
     }));
     if (triggerExists) {

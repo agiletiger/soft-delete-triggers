@@ -20,13 +20,13 @@ export const getForeignKeyReferencesWithTriggers = async (
 
   return (
     await Promise.all(
-      foreignKeyReferences.map(async ({ referencedTableName, referencedColumnName }) => {
+      foreignKeyReferences.map(async ({ referencedTableName, referencedColumnName, columnName }) => {
         const triggerExists = !!unwrapSelectOneValue(
-          await target.sequelize.query(buildExistTriggerStatement(referencedTableName, tableName), {
+          await target.sequelize.query(buildExistTriggerStatement(referencedTableName, referencedColumnName, tableName, columnName), {
             type: QueryTypes.SELECT,
           }),
         );
-        return triggerExists ? { referencedTableName, referencedColumnName } : null;
+        return triggerExists ? { referencedTableName, referencedColumnName, tableName, columnName } : null;
       }),
     )
   ).filter((field) => !!field) as ForeignKeyFields[];

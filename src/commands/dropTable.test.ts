@@ -52,7 +52,7 @@ describe(Support.getTestDialectTeaser('dropTable'), () => {
   it('supports dropping a dependent table', async function () {
     await queryInterface.dropTable('b');
     const oldTriggerExists = !!unwrapSelectOneValue(
-      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'b'), {
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'a_id', 'b', 'b_id'), {
         type: QueryTypes.SELECT,
       }),
     );
@@ -64,7 +64,7 @@ describe(Support.getTestDialectTeaser('dropTable'), () => {
     await queryInterface.removeConstraint('b', 'b_ibfk_1');
     await queryInterface.dropTable('a');
     const oldTriggerExists = !!unwrapSelectOneValue(
-      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'b'), {
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'a_id', 'b', 'b_id'), {
         type: QueryTypes.SELECT,
       }),
     );

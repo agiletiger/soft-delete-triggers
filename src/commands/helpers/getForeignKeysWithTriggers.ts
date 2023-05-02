@@ -23,9 +23,9 @@ export const getForeignKeysWithTriggers = async (
 
   return (
     await Promise.all(
-      foreignKeys.map(async ({ referencedTableName, tableName, columnName }) => {
+      foreignKeys.map(async ({ referencedTableName, referencedColumnName, tableName, columnName }) => {
         const triggerExists = !!unwrapSelectOneValue(
-          await target.sequelize.query(buildExistTriggerStatement(referencedTableName, tableName), {
+          await target.sequelize.query(buildExistTriggerStatement(referencedTableName, referencedColumnName, tableName, columnName), {
             type: QueryTypes.SELECT,
           }),
         );

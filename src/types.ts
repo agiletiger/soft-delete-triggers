@@ -18,9 +18,10 @@ export type Options = {
   getPrimaryKey?: (primaryTable: string) => string;
 };
 
+//TODO rename to ForeignKeyReferenceNames
 export type ForeignKeyFields = {
-  tableName: string;
-  columnName: string;
-  referencedTableName: string;
-  referencedColumnName: string;
+  tableName: string; //TODO: rename to dependentTableName
+  columnName: string; //TODO: rename to dependentTableColumnName
+  referencedTableName: string; //TODO: rename to independentTableName
+  referencedColumnName: string; //TODO: rename to independentTableColumnName
 };

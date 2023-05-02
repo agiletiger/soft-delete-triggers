@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildExistTriggerStatement = void 0;
 const buildTriggerName_1 = require("./buildTriggerName");
-const buildExistTriggerStatement = (primaryTable, foreignTable) => /* sql */ `
+const buildExistTriggerStatement = (independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName) => /* sql */ `
 SELECT
   EXISTS (
     SELECT
@@ -10,8 +10,9 @@ SELECT
     FROM
       INFORMATION_SCHEMA.TRIGGERS
     WHERE
-      EVENT_OBJECT_TABLE = '${primaryTable}'
-      AND TRIGGER_NAME = '${(0, buildTriggerName_1.buildTriggerName)(primaryTable, foreignTable)}'
+      EVENT_OBJECT_TABLE = '${independentTableName}'
+      AND TRIGGER_NAME LIKE '${(0, buildTriggerName_1.buildTriggerName)(independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName)}'
+
   )
 `;
 exports.buildExistTriggerStatement = buildExistTriggerStatement;

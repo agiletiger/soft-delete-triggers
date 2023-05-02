@@ -1,8 +1,10 @@
 import { buildTriggerName } from '../../utils/buildTriggerName';
 
 export const buildDropTriggerStatement = (
-  primaryTable: string,
-  foreignTable: string,
+  independentTableName: string,
+  independentTableColumnName: string,
+  dependentTableName: string,
+  dependentTableNameColumnName: string,
 ): string => /* sql */ `
-  DROP TRIGGER ${buildTriggerName(primaryTable, foreignTable)}
+  DROP TRIGGER ${buildTriggerName(independentTableName, independentTableColumnName, dependentTableName, dependentTableNameColumnName)}
 `;

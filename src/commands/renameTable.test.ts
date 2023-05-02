@@ -52,12 +52,12 @@ describe(Support.getTestDialectTeaser('renameTable'), () => {
   it('supports renaming a dependent table', async function () {
     await queryInterface.renameTable('b', 'z');
     const newTriggerExists = !!unwrapSelectOneValue(
-      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'z'), {
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'a_id', 'z', 'a_id'), {
         type: QueryTypes.SELECT,
       }),
     );
     const oldTriggerExists = !!unwrapSelectOneValue(
-      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'b'), {
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'a_id', 'b', 'a_id'), {
         type: QueryTypes.SELECT,
       }),
     );
@@ -68,12 +68,12 @@ describe(Support.getTestDialectTeaser('renameTable'), () => {
   it('supports renaming an independent table', async function () {
     await queryInterface.renameTable('a', 'z');
     const newTriggerExists = !!unwrapSelectOneValue(
-      await queryInterface.sequelize.query(buildExistTriggerStatement('z', 'b'), {
+      await queryInterface.sequelize.query(buildExistTriggerStatement('z', 'a_id', 'b', 'a_id'), {
         type: QueryTypes.SELECT,
       }),
     );
     const oldTriggerExists = !!unwrapSelectOneValue(
-      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'b'), {
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'a_id', 'b', 'a_id'), {
         type: QueryTypes.SELECT,
       }),
     );

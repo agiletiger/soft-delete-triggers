@@ -1,19 +1,25 @@
 import { buildTriggerName } from './buildTriggerName';
 
 export const buildCreateTriggerStatement = (
-  primaryTable: string,
-  primaryKey: string,
-  foreignTable: string,
-  foreignKey: string,
+  independentTableName: string,
+  independentTableColumnName: string,
+  dependentTableName: string,
+  dependentTableColumnName: string,
 ): string => /* sql */ `
-  CREATE TRIGGER ${buildTriggerName(primaryTable, foreignTable)}
+  CREATE TRIGGER ${buildTriggerName(independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName)}
   AFTER UPDATE
-  ON \`${primaryTable}\` FOR EACH ROW
+  ON \`${independentTableName}\` FOR EACH ROW
   BEGIN
+    -- begin paranoid sequelize delete metadata
+    -- independentTableName: ${independentTableName}
+    -- independentTableColumnName: ${independentTableColumnName}
+    -- dependentTableName: ${dependentTableName}
+    -- dependentTableColumnName: ${dependentTableColumnName}
+    -- end paranoid sequelize delete metadata
     IF \`OLD\`.\`deletedAt\` IS NULL AND \`NEW\`.\`deletedAt\` IS NOT NULL THEN
-      UPDATE \`${foreignTable}\`
-        SET \`${foreignTable}\`.\`deletedAt\` = NOW()
-      WHERE \`${foreignTable}\`.\`${foreignKey}\` = \`NEW\`.\`${primaryKey}\`;
+      UPDATE \`${dependentTableName}\`
+        SET \`${dependentTableName}\`.\`deletedAt\` = NOW()
+      WHERE \`${dependentTableName}\`.\`${dependentTableColumnName}\` = \`NEW\`.\`${independentTableColumnName}\`;
     END IF;
   END;
 `;

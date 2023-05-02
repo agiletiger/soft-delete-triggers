@@ -1,33 +1,38 @@
 import { QueryInterface, QueryTypes } from 'sequelize';
 import { RemoveColumnParameters } from '../types';
 import { buildDropTriggerStatement } from './helpers/buildDropTriggerStatement';
-import { getDependentTableFromTriggerActionStatement } from './helpers/getDependentTableFromTriggerActionStatement';
 import { getTriggersInformation } from '../utils/getTriggersInformation';
 import { unwrapSelectMany } from '../utils/unwrapSelect';
+import { getForeignKeyReferenceNamesFromTriggerActionStatement } from './helpers/getForeignKeyReferenceNamesFromTriggerActionStatement';
 
 export const REMOVE_COLUMN_COMMAND_NAME = 'removeColumn';
 
 export const removeColumn = async (target: QueryInterface, parameters: RemoveColumnParameters) => {
-  const [tableName] = parameters;
+  const [tableName, columnName] = parameters;
 
-  const triggersActionStatementsPointingToTable = unwrapSelectMany(
+  const foreignKeyReferenceNamesPointingToTable = (unwrapSelectMany(
     await target.sequelize.query(
       getTriggersInformation(
         '%',
+        '%',
         tableName as string,
+        columnName,
       ),
       { type: QueryTypes.SELECT }
-    )) as {EVENT_OBJECT_TABLE: string}[];
+    )) as {ACTION_STATEMENT: string}[])
+    .map(({ ACTION_STATEMENT }) => getForeignKeyReferenceNamesFromTriggerActionStatement(ACTION_STATEMENT));
 
 
-  const triggersActionStatementsPointedToTable = unwrapSelectMany(
+  const foreignKeyReferenceNamesPointedToTable = (unwrapSelectMany(
     await target.sequelize.query(
       getTriggersInformation(
         tableName as string,
+        columnName,
+        '%',
         '%',
       ),
       { type: QueryTypes.SELECT }
-      )) as {ACTION_STATEMENT: string}[];
+      )) as {ACTION_STATEMENT: string}[]).map(({ ACTION_STATEMENT }) => getForeignKeyReferenceNamesFromTriggerActionStatement(ACTION_STATEMENT));
 
   await Reflect.apply(
     (target as Record<string, any>)[REMOVE_COLUMN_COMMAND_NAME],
@@ -36,19 +41,20 @@ export const removeColumn = async (target: QueryInterface, parameters: RemoveCol
   );
 
   // table acting as a dependent table
-  if (triggersActionStatementsPointingToTable.length) {
+  if (foreignKeyReferenceNamesPointingToTable.length) {
+    console.log('foreignKeyReferenceNamesPointingToTable', foreignKeyReferenceNamesPointingToTable)
     await Promise.all(
-      triggersActionStatementsPointingToTable.map(({ EVENT_OBJECT_TABLE }) =>
-        target.sequelize.query(buildDropTriggerStatement(EVENT_OBJECT_TABLE, tableName as string))
+      foreignKeyReferenceNamesPointingToTable.map(({ independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName }) =>
+        target.sequelize.query(buildDropTriggerStatement(independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName))
       ),
     );
   }
 
   // acting as a independent table implementation
-  if (triggersActionStatementsPointedToTable.length) {
+  if (foreignKeyReferenceNamesPointedToTable.length) {
     await Promise.all(
-      triggersActionStatementsPointedToTable.map(({ ACTION_STATEMENT }) =>
-        target.sequelize.query(buildDropTriggerStatement(tableName as string, getDependentTableFromTriggerActionStatement(ACTION_STATEMENT)))
+      foreignKeyReferenceNamesPointedToTable.map(({ independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName }) =>
+        target.sequelize.query(buildDropTriggerStatement(independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName))
       ),
     );
   }

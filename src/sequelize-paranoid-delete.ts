@@ -34,7 +34,7 @@ const getNextRelation = async (tableRelations: ForeignKeyFields[], queryInterfac
   }
 
   const triggerExists = !!unwrapSelectOneValue(
-    await queryInterface.sequelize.query(buildExistTriggerStatement(relation.referencedTableName, relation.tableName), {
+    await queryInterface.sequelize.query(buildExistTriggerStatement(relation.referencedTableName, relation.referencedColumnName, relation.tableName, relation.columnName), {
       type: QueryTypes.SELECT,
     }),
   );

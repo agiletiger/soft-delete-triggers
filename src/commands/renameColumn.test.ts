@@ -40,6 +40,16 @@ describe(Support.getTestDialectTeaser('renameColumn'), () => {
         onDelete: 'PARANOID CASCADE',
       },
 
+      a_id1: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: 'a',
+          key: 'a_id',
+        },
+        allowNull: false,
+        onDelete: 'PARANOID CASCADE',
+      },
+
       deletedAt: {
         type: DataTypes.DATE,
       },
@@ -52,36 +62,61 @@ describe(Support.getTestDialectTeaser('renameColumn'), () => {
 
   it('supports renaming a dependent table column', async function () {
     await queryInterface.renameColumn('b', 'a_id', 'z_id');
-    const triggerStillExists = !!unwrapSelectOneValue(
-      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'b'), {
+    const oldTriggerExists = !!unwrapSelectOneValue(
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'a_id', 'b', 'a_id'), {
+        type: QueryTypes.SELECT,
+      }),
+    );
+    const otherTriggerExists = !!unwrapSelectOneValue(
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'a_id', 'b', 'a_id1'), {
+        type: QueryTypes.SELECT,
+      }),
+    );
+    const triggerNameWasUpdated = !!unwrapSelectOneValue(
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'a_id', 'b', 'z_id'), {
         type: QueryTypes.SELECT,
       }),
     );
     const actionStatement = unwrapSelectOneValue(
-      await queryInterface.sequelize.query(getTriggersInformation('a', 'b'), {
+      await queryInterface.sequelize.query(getTriggersInformation('a', 'a_id', 'b', 'z_id'), {
         type: QueryTypes.SELECT,
       }),
     );
-    expect(triggerStillExists).to.be.true;
+    expect(oldTriggerExists).to.be.false;
+    expect(otherTriggerExists).to.be.true;
+    expect(triggerNameWasUpdated).to.be.true;
     expect(actionStatement).to.contain(`WHERE \`b\`.\`z_id\` = \`NEW\`.\`a_id\`;`);
   });
 
   it('supports renaming an independent table column', async function () {
     // need to remove foreign key constraint first
     await queryInterface.removeConstraint('b', 'b_ibfk_1');
+    await queryInterface.removeConstraint('b', 'b_ibfk_2');
 
     await queryInterface.renameColumn('a', 'a_id', 'z_id');
-    const triggerStillExists = !!unwrapSelectOneValue(
-      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'b'), {
+    const oldTriggerExists = !!unwrapSelectOneValue(
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'a_id', 'b', 'a_id'), {
+        type: QueryTypes.SELECT,
+      }),
+    );
+    const otherTriggerExists = !!unwrapSelectOneValue(
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'z_id', 'b', 'a_id1'), {
+        type: QueryTypes.SELECT,
+      }),
+    );
+    const triggerNameWasUpdated = !!unwrapSelectOneValue(
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'z_id', 'b', 'a_id'), {
         type: QueryTypes.SELECT,
       }),
     );
     const actionStatement = unwrapSelectOneValue(
-      await queryInterface.sequelize.query(getTriggersInformation('a', 'b'), {
+      await queryInterface.sequelize.query(getTriggersInformation('a', 'z_id', 'b', 'a_id'), {
         type: QueryTypes.SELECT,
       }),
     );
-    expect(triggerStillExists).to.be.true;
+    expect(oldTriggerExists).to.be.false;
+    expect(otherTriggerExists).to.be.true;
+    expect(triggerNameWasUpdated).to.be.true;
     expect(actionStatement).to.contain(`WHERE \`b\`.\`a_id\` = \`NEW\`.\`z_id\`;`);
   });
 });

@@ -2,35 +2,37 @@ import { QueryInterface, QueryTypes } from 'sequelize';
 import { RenameColumnParameters } from '../types';
 import { buildCreateTriggerStatement } from '../utils/buildCreateTriggerStatement';
 import { buildDropTriggerStatement } from './helpers/buildDropTriggerStatement';
-import { getDependentColumnFromTriggerActionStatement } from './helpers/getDependentColumnFromTriggerActionStatement';
-import { getDependentTableFromTriggerActionStatement } from './helpers/getDependentTableFromTriggerActionStatement';
-import { getIndependentColumnFromTriggerActionStatement } from './helpers/getIndependentColumnFromTriggerActionStatement';
 import { getTriggersInformation } from '../utils/getTriggersInformation';
 import { unwrapSelectMany } from '../utils/unwrapSelect';
+import { getForeignKeyReferenceNamesFromTriggerActionStatement } from './helpers/getForeignKeyReferenceNamesFromTriggerActionStatement';
 
 export const RENAME_COLUMN_COMMAND_NAME = 'renameColumn';
 
 export const renameColumn = async (target: QueryInterface, parameters: RenameColumnParameters) => {
-  const [tableName, _oldColumnName, newColumnName] = parameters;
+  const [tableName, oldColumnName, newColumnName] = parameters;
 
-  const triggersActionStatementsPointingToTable = unwrapSelectMany(
+  const foreignKeyReferenceNamesPointingToTable = (unwrapSelectMany(
     await target.sequelize.query(
       getTriggersInformation(
         '%',
+        '%',
         tableName as string,
+        oldColumnName,
       ),
       { type: QueryTypes.SELECT }
-    )) as {EVENT_OBJECT_TABLE: string; ACTION_STATEMENT: string}[];
+      )) as {ACTION_STATEMENT: string}[]).map(({ ACTION_STATEMENT }) => getForeignKeyReferenceNamesFromTriggerActionStatement(ACTION_STATEMENT));
 
 
-  const triggersActionStatementsPointedToTable = unwrapSelectMany(
+  const foreignKeyReferenceNamesPointedToTable = (unwrapSelectMany(
     await target.sequelize.query(
       getTriggersInformation(
         tableName as string,
+        oldColumnName,
+        '%',
         '%',
       ),
       { type: QueryTypes.SELECT }
-      )) as {ACTION_STATEMENT: string}[];
+      )) as {ACTION_STATEMENT: string}[]).map(({ ACTION_STATEMENT }) => getForeignKeyReferenceNamesFromTriggerActionStatement(ACTION_STATEMENT));
 
 
   await Reflect.apply(
@@ -40,44 +42,34 @@ export const renameColumn = async (target: QueryInterface, parameters: RenameCol
   );
 
   // table acting as a dependent table
-  if (triggersActionStatementsPointingToTable.length) {
+  if (foreignKeyReferenceNamesPointingToTable.length) {
     await Promise.all(
-      triggersActionStatementsPointingToTable.map(({ EVENT_OBJECT_TABLE }) =>
-        target.sequelize.query(buildDropTriggerStatement(EVENT_OBJECT_TABLE, tableName as string))
+      foreignKeyReferenceNamesPointingToTable.map(({ independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName }) =>
+        target.sequelize.query(buildDropTriggerStatement(independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName))
       ),
     );
 
     await Promise.all(
-      triggersActionStatementsPointingToTable.map(({ EVENT_OBJECT_TABLE, ACTION_STATEMENT }) =>
+      foreignKeyReferenceNamesPointingToTable.map(({ independentTableName, independentTableColumnName, dependentTableName }) =>
         target.sequelize.query(
-          buildCreateTriggerStatement(
-            EVENT_OBJECT_TABLE,
-            getIndependentColumnFromTriggerActionStatement(ACTION_STATEMENT),
-            tableName as string,
-            newColumnName,
-          ),
+          buildCreateTriggerStatement(independentTableName, independentTableColumnName, dependentTableName, newColumnName),
         ),
       ),
     );
   }
 
   // acting as a independent table implementation
-  if (triggersActionStatementsPointedToTable.length) {
+  if (foreignKeyReferenceNamesPointedToTable.length) {
     await Promise.all(
-      triggersActionStatementsPointedToTable.map(({ ACTION_STATEMENT }) =>
-        target.sequelize.query(buildDropTriggerStatement(tableName as string, getDependentTableFromTriggerActionStatement(ACTION_STATEMENT)))
+      foreignKeyReferenceNamesPointedToTable.map(({ independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName }) =>
+        target.sequelize.query(buildDropTriggerStatement(independentTableName, independentTableColumnName, dependentTableName, dependentTableColumnName))
       ),
     );
 
     await Promise.all(
-      triggersActionStatementsPointedToTable.map(({ ACTION_STATEMENT }) =>
+      foreignKeyReferenceNamesPointedToTable.map(({ independentTableName, dependentTableName, dependentTableColumnName }) =>
         target.sequelize.query(
-          buildCreateTriggerStatement(
-            tableName as string,
-            newColumnName,
-            getDependentTableFromTriggerActionStatement(ACTION_STATEMENT),
-            getDependentColumnFromTriggerActionStatement(ACTION_STATEMENT),
-          ),
+          buildCreateTriggerStatement(independentTableName, newColumnName, dependentTableName, dependentTableColumnName),
         ),
       ),
     );

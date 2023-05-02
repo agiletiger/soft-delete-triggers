@@ -33,21 +33,21 @@ export const renameTable = async (target: QueryInterface, parameters: RenameTabl
   // table acting as a dependent table
   if (foreignKeyReferencesWithTriggers.length) {
     await Promise.all(
-      foreignKeyReferencesWithTriggers.map(({ referencedTableName, referencedColumnName }) =>
+      foreignKeyReferencesWithTriggers.map(({ referencedTableName, referencedColumnName, columnName }) =>
         target.sequelize.query(
           buildCreateTriggerStatement(
             referencedTableName,
             referencedColumnName,
             newName as string,
-            primaryKey as string,
+            columnName,
           ),
         ),
       ),
     );
 
     await Promise.all(
-      foreignKeyReferencesWithTriggers.map(({ referencedTableName }) =>
-        target.sequelize.query(buildDropTriggerStatement(referencedTableName, oldName as string)),
+      foreignKeyReferencesWithTriggers.map(({ referencedTableName, referencedColumnName, columnName }) =>
+        target.sequelize.query(buildDropTriggerStatement(referencedTableName, referencedColumnName, oldName as string, columnName)),
       ),
     );
   }
@@ -68,8 +68,8 @@ export const renameTable = async (target: QueryInterface, parameters: RenameTabl
     );
 
     await Promise.all(
-      foreignKeysWithTriggers.map(({ tableName }) =>
-        target.sequelize.query(buildDropTriggerStatement(oldName as string, tableName)),
+      foreignKeysWithTriggers.map(({ tableName, columnName }) =>
+        target.sequelize.query(buildDropTriggerStatement(oldName as string, primaryKey as string, tableName, columnName)),
       ),
     );
   }

@@ -52,7 +52,7 @@ describe(Support.getTestDialectTeaser('removeColumn'), () => {
   it('supports removing a dependent table column', async function () {
     await queryInterface.removeColumn('b', 'a_id');
     const triggerExists = !!unwrapSelectOneValue(
-      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'b'), {
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'a_id', 'b', 'b_id'), {
         type: QueryTypes.SELECT,
       }),
     );
@@ -66,7 +66,7 @@ describe(Support.getTestDialectTeaser('removeColumn'), () => {
 
     await queryInterface.removeColumn('a', 'a_id');
     const triggerExists = !!unwrapSelectOneValue(
-      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'b'), {
+      await queryInterface.sequelize.query(buildExistTriggerStatement('a', 'a_id', 'b', 'b_id'), {
         type: QueryTypes.SELECT,
       }),
     );

@@ -24,8 +24,8 @@ export const dropTable = async (
   );
 
   await Promise.all(
-    foreignKeyReferencesWithTriggers.map(({ referencedTableName }) =>
-      target.sequelize.query(buildDropTriggerStatement(referencedTableName, tableName as string)),
+    foreignKeyReferencesWithTriggers.map(({ referencedTableName, referencedColumnName, columnName }) =>
+      target.sequelize.query(buildDropTriggerStatement(referencedTableName, referencedColumnName, tableName as string, columnName)),
     ),
   );
 };
