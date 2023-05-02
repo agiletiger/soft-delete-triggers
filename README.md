@@ -128,13 +128,13 @@ The expected structure of the file is the following:
 
 ```json
 {
-	"dbname": "",
-	"schema": "",
-	"username": "",
-	"password": "",
-	"host": "",
-	"port": "",
-	"dialect": "mysql",
+  "dbname": "",
+  "schema": "",
+  "username": "",
+  "password": "",
+  "host": "",
+  "port": "",
+  "dialect": "mysql",
   "allowListTables": null,
   "denyListTables": null,
   "tenantColumns": null
