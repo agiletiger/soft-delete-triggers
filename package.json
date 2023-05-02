@@ -1,6 +1,6 @@
 {
   "name": "@rematter/sequelize-paranoid-delete",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "sequelize-paranoid-delete enables onDelete when using paranoid mode",
   "bugs": {
     "url": "https://github.com/ReMatter/sequelize-paranoid-delete/issues"
@@ -9,7 +9,8 @@
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
   "files": [
-    "lib"
+    "lib",
+    "bin"
   ],
   "bin": "bin/sequelize-paranoid-delete.js",
   "scripts": {

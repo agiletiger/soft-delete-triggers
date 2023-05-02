@@ -8,7 +8,7 @@ sequelize-paranoid-delete enables onDelete when using paranoid mode in sequelize
 - Extremely easy to use
 - Database agnostic (WIP, working for MySQL now)
 - Integrates with Umzug and any othe library for running migrations with sequelize
-- CLI to generate triggers for existing database (WIP)
+- CLI to generate triggers for existing database
 
 ## Use Cases:
 
@@ -111,13 +111,13 @@ async function up({ context: queryInterface }) {
 sequelize-paranoid-delete is available on npm by specifying the correct tag:
 
 ```bash
-npm install sequelize-paranoid-delete
+npm install @rematter/sequelize-paranoid-delete
 ```
 
 OR
 
 ```bash
-yarn add sequelize-paranoid-delete
+yarn add @rematter/sequelize-paranoid-delete
 ```
 
 #### Configuration file for CLI
@@ -147,6 +147,9 @@ First two are for configuring which tables you DO want to scan or you do NOT wan
 
 Tenant columns is to prevent scanning relations between tenant foreign keys.
 
+```bash
+npx sequelize-paranoid-delete
+```
 
 ### Debug Tests
 
