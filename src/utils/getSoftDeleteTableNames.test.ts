@@ -35,7 +35,7 @@ describe(Support.getTestDialectTeaser('getSoftDeleteTableNames'), () => {
 
   it('should only list table names with the soft delete column', async function () {
     // TODO take schema name from config
-    const softDeleteTableNames = await getSoftDeleteTableNames('sequelize_cascade_paranoid_test', queryInterface);
+    const softDeleteTableNames = await getSoftDeleteTableNames('soft_delete_triggers_test', queryInterface);
 
     expect(softDeleteTableNames).to.be.eql(['a']);
   });

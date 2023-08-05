@@ -6,7 +6,7 @@
     "outDir": "bin"
   },
   "files": [
-    "src/sequelize-paranoid-delete.ts"
+    "src/soft-delete-triggers.ts"
   ],
   "exclude": [
     "node_modules"

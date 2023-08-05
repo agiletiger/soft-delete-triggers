@@ -204,7 +204,7 @@ const up = async (options) => {
     });
 };
 (async () => {
-    const configPath = path.join(process.cwd(), './.spdrc');
+    const configPath = path.join(process.cwd(), './.sdtrc');
     const config = await (0, promises_1.readFile)(configPath, { encoding: 'utf8' });
     const options = JSON.parse(config);
     if (options.allowListTables && options.denyListTables) {

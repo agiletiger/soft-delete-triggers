@@ -1,6 +1,6 @@
-# sequelize-paranoid-delete
+# soft-delete-triggers
 
-sequelize-paranoid-delete enables onDelete when using paranoid mode in sequelize
+soft-delete-triggers enables emulating db behavior through triggers when doing soft deletes
 
 ## Highlights
 
@@ -29,7 +29,7 @@ The following example uses a MySql database through sequelize and persists the m
 // index.js
 const { Sequelize } = require('sequelize');
 const { Umzug, SequelizeStorage } = require('umzug');
-const { queryInterfaceDecorator } = require('sequelize-paranoid-delete');
+const { queryInterfaceDecorator } = require('soft-delete-triggers');
 
 const sequelize = new Sequelize({ dialect: 'mysql', storage: './db.mysql' });
 
@@ -108,21 +108,21 @@ async function up({ context: queryInterface }) {
 
 #### Installation
 
-sequelize-paranoid-delete is available on npm by specifying the correct tag:
+soft-delete-triggers is available on npm by specifying the correct tag:
 
 ```bash
-npm install @rematter/sequelize-paranoid-delete
+npm install @agiletiger/soft-delete-triggers
 ```
 
 OR
 
 ```bash
-yarn add @rematter/sequelize-paranoid-delete
+yarn add @agiletiger/soft-delete-triggers
 ```
 
 #### Configuration file for CLI
 
-Put configuration options in a file named `.spdrc` in your working directory.
+Put configuration options in a file named `.sdtrc` in your working directory.
 
 The expected structure of the file is the following:
 
@@ -148,7 +148,7 @@ First two are for configuring which tables you DO want to scan or you do NOT wan
 Tenant columns is to prevent scanning relations between tenant foreign keys.
 
 ```bash
-npx sequelize-paranoid-delete
+npx soft-delete-triggers
 ```
 
 ### Debug Tests

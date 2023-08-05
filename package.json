@@ -1,18 +1,18 @@
 {
-  "name": "@rematter/sequelize-paranoid-delete",
+  "name": "@agiletiger/soft-delete-triggers",
   "version": "0.1.1",
-  "description": "sequelize-paranoid-delete enables onDelete when using paranoid mode",
+  "description": "soft-delete-triggers enables onDelete when using paranoid mode",
   "bugs": {
-    "url": "https://github.com/ReMatter/sequelize-paranoid-delete/issues"
+    "url": "https://github.com/agiletiger/soft-delete-triggers/issues"
   },
-  "repository": "https://github.com/ReMatter/sequelize-paranoid-delete",
+  "repository": "https://github.com/agiletiger/soft-delete-triggers",
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
   "files": [
     "lib",
     "bin"
   ],
-  "bin": "bin/sequelize-paranoid-delete.js",
+  "bin": "bin/soft-delete-triggers.js",
   "scripts": {
     "test-unit": "yarn ts-mocha -p lib.tsconfig.json \"src/**/*.test.ts\"",
     "test-integration": "yarn ts-mocha -p lib.tsconfig.json \"test/integration/**/*.test.ts\"",
@@ -26,7 +26,7 @@
     "cascade",
     "triggers"
   ],
-  "author": "ReMatter",
+  "author": "Agile Tiger",
   "license": "MIT",
   "devDependencies": {
     "@types/chai": "^4.3.4",

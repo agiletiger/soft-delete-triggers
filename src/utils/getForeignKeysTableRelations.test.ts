@@ -66,7 +66,7 @@ describe(Support.getTestDialectTeaser('getForeignKeysTableRelations'), () => {
 
   it('should get the tables that reference a', async function () {
     // TODO take schema name from config
-    const foreignKeysTableRelations = await getForeignKeysTableRelations(['a'], 'sequelize_cascade_paranoid_test', queryInterface);
+    const foreignKeysTableRelations = await getForeignKeysTableRelations(['a'], 'soft_delete_triggers_test', queryInterface);
 
     expect(foreignKeysTableRelations).to.be.eql([
       { dependentTableName: 'b', dependentTableColumnName: 'a_id', independentTableName: 'a', independentTableColumnName: 'a_id' },
@@ -76,21 +76,21 @@ describe(Support.getTestDialectTeaser('getForeignKeysTableRelations'), () => {
 
   it('should get the tables that reference b', async function () {
     // TODO take schema name from config
-    const foreignKeysTableRelations = await getForeignKeysTableRelations(['b'], 'sequelize_cascade_paranoid_test', queryInterface);
+    const foreignKeysTableRelations = await getForeignKeysTableRelations(['b'], 'soft_delete_triggers_test', queryInterface);
 
     expect(foreignKeysTableRelations).to.be.eql([{ dependentTableName: 'c', dependentTableColumnName: 'b_id', independentTableName: 'b', independentTableColumnName: 'b_id' }]);
   });
 
   it('should get the tables that reference c', async function () {
     // TODO take schema name from config
-    const foreignKeysTableRelations = await getForeignKeysTableRelations(['c'], 'sequelize_cascade_paranoid_test', queryInterface);
+    const foreignKeysTableRelations = await getForeignKeysTableRelations(['c'], 'soft_delete_triggers_test', queryInterface);
 
     expect(foreignKeysTableRelations).to.be.eql([]);
   });
 
   it('should get the sum of relations if we query all tables', async function () {
     // TODO take schema name from config
-    const foreignKeysTableRelations = await getForeignKeysTableRelations(['a', 'b', 'c'], 'sequelize_cascade_paranoid_test', queryInterface);
+    const foreignKeysTableRelations = await getForeignKeysTableRelations(['a', 'b', 'c'], 'soft_delete_triggers_test', queryInterface);
 
     expect(foreignKeysTableRelations).to.have.lengthOf(3);
   });
